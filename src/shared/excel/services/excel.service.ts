@@ -4,17 +4,17 @@ import ExcelJs from 'exceljs'
 import { dirname, join} from 'node:path';
 import { fileURLToPath } from 'node:url';
 import jszip, { JSZipObject } from 'jszip';
+import { EMPTY_EXCEL_FILE_NAME } from '../domain/helpers/period-mapped';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 @Injectable()
 export class ExcelService {
 
-  async openExcelFile(excelPath?: string, pageToLoad: number = 1) {
-    console.log(__dirname)
+  async openExcelFile(fileName: string, excelPath?: string, pageToLoad: number = 1) {
     const workbook = new ExcelJs.Workbook()
 
-    const filePath = join(__dirname, 'archivo.xlsx')
+    const filePath = join(__dirname, fileName)
     try {
       await workbook.xlsx.readFile(filePath)
       const worksheet = workbook.getWorksheet(pageToLoad)
@@ -28,8 +28,8 @@ export class ExcelService {
     }
   }
 
-  async saveExcelChanges(workBook: ExcelJs.Workbook) {
-    await workBook.xlsx.writeFile(join(__dirname, 'archivo.xlsx'))
+  async saveExcelChanges(workBook: ExcelJs.Workbook, fileName: string) {
+    await workBook.xlsx.writeFile(join(__dirname, fileName))
   }
 
   async convertWorkbookToBuffer(workbook: ExcelJs.Workbook): Promise<jszip | null> {
