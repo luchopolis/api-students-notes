@@ -1,0 +1,126 @@
+// use prisma-8
+
+enum GradeStatus {
+  PENDING
+  SUBMITTED
+  GRADING
+}
+
+enum EvaluationType {
+  NOTE_1
+  NOTE_2
+  EXAM
+}
+
+model AcademicYear {
+  id        Uuid       @id @default(uuid())
+  yearName  String     @unique // "2024-A", "2025-B"
+  startDate Date
+  endDate   Date
+
+  periods     Period[]
+  enrollments Enrollment[]
+
+  @@map("academic_years")
+}
+
+model Period {
+  id             Uuid         @id @default(uuid())
+  academicYearId Uuid
+  number         Int          
+  name           String
+  evaluations    Evaluation[]
+
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  @@unique([academicYearId, number])
+  @@map("periods")
+}
+
+model Student {
+  id          Uuid         @id @default(uuid())
+  dni         String       @unique
+  firstName   String
+  lastName1   String
+  lastName2   String?
+  birthDate   Date
+  email       String       @unique
+
+  enrollments Enrollment[]
+
+  @@map("students")
+}
+
+model Subject {
+  id          Uuid         @id @default(uuid())
+  code        String       @unique // "MATE-01", "HIST-02"
+  name        String
+  description String?
+
+  enrollments Enrollment[]
+
+  @@index([code])
+  @@map("subjects")
+}
+
+model Enrollment {
+  id               Uuid         @id @default(uuid())
+  studentId        Uuid
+  subjectId        Uuid
+  academicYearId   Uuid
+  enrollmentNumber Int          @unique
+  registrationDate Date
+
+  student          Student      @relation(fields: [studentId], references: [id])
+  subject          Subject      @relation(fields: [subjectId], references: [id])
+  academicYear     AcademicYear @relation(fields: [academicYearId], references: [id])
+  grades           Grade[]
+
+  @@unique([studentId, subjectId])
+  @@map("enrollments")
+}
+
+model Evaluation {
+  id            Uuid           @id @default(uuid())
+  periodId      Uuid
+  type          EvaluationType
+  weight        Float          @default(35.0) 
+  activityOrder Int            @default(0) 
+
+  period        Period         @relation(fields: [periodId], references: [id])
+  activities    Activity[]
+
+  @@unique([periodId, type])
+  @@index([periodId, type])
+  @@map("evaluations")
+}
+
+model Activity {
+  id           Uuid       @id @default(uuid())
+  evaluationId Uuid
+  name         String     
+  weight       Float      @default(100.0) 
+  description  String?
+
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id])
+  grades       Grade[]
+
+  @@unique([evaluationId, name])
+  @@index([evaluationId])
+  @@map("activities")
+}
+
+model Grade {
+  id             Uuid        @id @default(uuid())
+  enrollmentId   Uuid
+  activityId     Uuid
+  gradeValue     Numeric(5, 2) @default("0.00")
+  submissionDate Date?
+  status         GradeStatus @default(PENDING)
+
+  enrollment     Enrollment  @relation(fields: [enrollmentId], references: [id])
+  activity       Activity    @relation(fields: [activityId], references: [id])
+
+  @@unique([enrollmentId, activityId])
+  @@map("grades")
+}

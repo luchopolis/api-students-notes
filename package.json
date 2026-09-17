@@ -21,8 +21,11 @@
     "test:cov": "npm run copy:assets && vitest run --coverage",
     "test:debug": "npm run copy:assets && vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "npm run copy:assets && vitest run --config ./vitest.config.e2e.ts",
-    "postinstall": "prisma skills sync || exit 0",
-    "contract:emit": "prisma contract emit"
+    "postinstall": "prisma contract emit",
+    "db:generate": "prisma contract emit",
+    "db:dev": "prisma db update",
+    "db:migrate": "prisma migration plan",
+    "db:deploy": "prisma migrate"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
@@ -30,7 +33,7 @@
     "@nestjs/platform-express": "^12.0.1",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
-    "@prisma/orm-postgres": "^8.0.0-rc.9",
+    "@prisma/orm-postgres": "^8.0.0-rc.11",
     "dotenv": "^17.4.2",
     "exceljs": "^4.4.0",
     "jszip": "^3.10.2",

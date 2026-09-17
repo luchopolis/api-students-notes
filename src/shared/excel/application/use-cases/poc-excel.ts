@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { ExcelService } from "../../services/excel.service.js";
 
 import fs from 'fs'
-import { EMPTY_EXCEL_FILE_NAME, FakeStudentsNotes, PeriodMapped, PeriodNotesColumnPosition, RowStartIndex, STUDENT_START_COLUMN } from "../../domain/helpers/period-mapped.js";
+import { EMPTY_EXCEL_FILE_NAME, FakeStudentsNotes, PeriodMapped, PeriodNotesColumnPosition, RowStartIndex, STUDENT_GENDER_COLUMN, STUDENT_NIE_COLUMN, STUDENT_START_COLUMN } from "../../domain/helpers/period-mapped.js";
 
 @Injectable()
 export class PocExcelUseCase {
@@ -10,7 +10,7 @@ export class PocExcelUseCase {
   constructor(private readonly pocExcelService: ExcelService) {}
 
 
-  async execute() {
+  async execute(periodToExtract: 'First' | 'Second') {
     const { workbook, worksheet: workSheetExcel } = await this.pocExcelService.openExcelFile(EMPTY_EXCEL_FILE_NAME)
 
     if (!workSheetExcel) {
@@ -19,17 +19,18 @@ export class PocExcelUseCase {
 
 
     // students
-    const studentsColumn = workSheetExcel.getColumn(STUDENT_START_COLUMN)
+   workSheetExcel.getColumn(STUDENT_START_COLUMN)
     // fill with students
     for (let rowPosition = 0; rowPosition < FakeStudentsNotes.length; rowPosition++){
       const student = FakeStudentsNotes[rowPosition]
       const rowPositionCell = RowStartIndex + rowPosition;
       const row = workSheetExcel.getRow(rowPositionCell)
-      row.getCell(STUDENT_START_COLUMN).value = student.name;
-    
 
-      // only first period
-      const period = PeriodMapped['First']
+      row.getCell(STUDENT_NIE_COLUMN).value = student.nie;
+      row.getCell(STUDENT_START_COLUMN).value = student.name;
+      row.getCell(STUDENT_GENDER_COLUMN).value = student.gender;
+
+      const period = PeriodMapped[periodToExtract]
       const totalNotesPeriodColumns = Object.keys(period)
       for (const noteColumn of totalNotesPeriodColumns) {
         if (noteColumn === PeriodNotesColumnPosition.FNote) {
