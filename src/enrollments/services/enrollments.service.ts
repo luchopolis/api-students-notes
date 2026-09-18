@@ -23,13 +23,14 @@ export class EnrollmentsService {
 
   findAll(query: FindEnrollmentsQueryDto = {}): Promise<Enrollment[]> {
     const { subjectId, academicYearId } = query;
-    if (!subjectId !== !academicYearId) {
-      throw new BadRequestException(
-        'subjectId and academicYearId must be provided together when filtering.',
-      );
+    if (subjectId && !academicYearId) {
+      throw new BadRequestException('academicYearId is required when filtering by subjectId.');
     }
     if (subjectId && academicYearId) {
       return this.repository.findAllBySubjectAndAcademicYear(subjectId, academicYearId);
+    }
+    if (academicYearId) {
+      return this.repository.findAllByAcademicYearId(academicYearId);
     }
     return this.repository.findAll();
   }

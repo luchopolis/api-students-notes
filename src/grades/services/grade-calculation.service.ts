@@ -123,14 +123,24 @@ export class GradeCalculationService {
   }
 
   async getEvaluationGrade(enrollmentId: string, evaluationId: string): Promise<EvaluationGradeResult> {
+    const enrollment = await this.enrollmentRepository.findById(enrollmentId);
+    if (!enrollment) {
+      throw new NotFoundException(`Enrollment ${enrollmentId} not found`);
+    }
+
     const evaluation = await this.evaluationRepository.findById(evaluationId);
     if (!evaluation) {
       throw new NotFoundException(`Evaluation ${evaluationId} not found`);
     }
 
-    const activities = await this.activityRepository.findAllByEvaluationId(evaluationId);
+    const activities = await this.activityRepository.findAllByEvaluationId(
+      evaluationId,
+      enrollment.subjectId,
+    );
     if (activities.length === 0) {
-      throw new BadRequestException(`Evaluation ${evaluationId} has no activities to grade.`);
+      throw new BadRequestException(
+        `Evaluation ${evaluationId} has no activities to grade for subject ${enrollment.subjectId}.`,
+      );
     }
     assertWeightsSumTo100(
       activities.map((activity) => activity.weight),

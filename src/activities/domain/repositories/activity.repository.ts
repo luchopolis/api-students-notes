@@ -5,13 +5,14 @@ export const ACTIVITY_REPOSITORY = Symbol('ACTIVITY_REPOSITORY');
 
 export type CreateActivityInput = {
   evaluationId: string;
+  subjectId: string;
   name: string;
   weight: number;
   description?: string;
 };
 
 export interface IActivityRepository {
-  findAllByEvaluationId(evaluationId: string): Promise<Activity[]>;
+  findAllByEvaluationId(evaluationId: string, subjectId?: string): Promise<Activity[]>;
   findById(id: string): Promise<Activity | null>;
   create(data: CreateActivityInput): Promise<Activity>;
   update(id: string, data: UpdateActivityDto): Promise<Activity | null>;

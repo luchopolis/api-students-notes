@@ -1,15 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ActivitiesService } from '../services/activities.service.js';
 import { CreateActivityDto } from '../application/dtos/create-activity.dto.js';
 import { UpdateActivityDto } from '../application/dtos/update-activity.dto.js';
+import { FindActivitiesQueryDto } from '../application/dtos/find-activities-query.dto.js';
 
 @Controller()
 export class ActivitiesController {
   constructor(private readonly activitiesService: ActivitiesService) {}
 
   @Get('evaluations/:evaluationId/activities')
-  findAllByEvaluation(@Param('evaluationId') evaluationId: string) {
-    return this.activitiesService.findAllByEvaluationId(evaluationId);
+  findAllByEvaluation(@Param('evaluationId') evaluationId: string, @Query() query: FindActivitiesQueryDto) {
+    return this.activitiesService.findAllByEvaluationId(evaluationId, query.subjectId);
   }
 
   @Post('evaluations/:evaluationId/activities')

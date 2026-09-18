@@ -15,8 +15,8 @@ export class ActivitiesService {
     @Inject(EVALUATION_REPOSITORY) private readonly evaluationRepository: IEvaluationRepository,
   ) {}
 
-  findAllByEvaluationId(evaluationId: string): Promise<Activity[]> {
-    return this.repository.findAllByEvaluationId(evaluationId);
+  findAllByEvaluationId(evaluationId: string, subjectId?: string): Promise<Activity[]> {
+    return this.repository.findAllByEvaluationId(evaluationId, subjectId);
   }
 
   async findOne(id: string): Promise<Activity> {

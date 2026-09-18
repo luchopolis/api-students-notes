@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a36cc59b67c0f2420b914bdbf141c2e0b33bd564ba6db0d2b41fff1d991b3c06'>;
+  StorageHashBase<'2647cdb54890f93ff4ca734dbc54c656f05c6d4394f5f1f611a4b33229a2e749'>;
 export type ExecutionHash =
   ExecutionHashBase<'f4de0efdf5b8533a4f7151bda857b943258632c9dc0ca5b9be4457e5e4c6acac'>;
 export type ProfileHash =
@@ -252,7 +252,6 @@ export type FieldOutputTypes = {
     readonly Activity: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly evaluationId: CodecTypes['pg/uuid@1']['output'];
-      readonly subjectId: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly weight: CodecTypes['pg/float8@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
@@ -327,7 +326,6 @@ export type FieldInputTypes = {
     readonly Activity: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly evaluationId: CodecTypes['pg/uuid@1']['input'];
-      readonly subjectId: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly weight: CodecTypes['pg/float8@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
@@ -404,7 +402,6 @@ export type StorageColumnTypes = {
       readonly evaluationId: CodecTypes['pg/uuid@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
-      readonly subjectId: CodecTypes['pg/uuid@1']['output'];
       readonly weight: CodecTypes['pg/float8@1']['output'];
     };
     readonly enrollments: {
@@ -479,7 +476,6 @@ export type StorageColumnInputTypes = {
       readonly evaluationId: CodecTypes['pg/uuid@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
-      readonly subjectId: CodecTypes['pg/uuid@1']['input'];
       readonly weight: CodecTypes['pg/float8@1']['input'];
     };
     readonly enrollments: {
@@ -585,9 +581,8 @@ export namespace Models {
     code: CodecTypes['pg/text@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     description: CodecTypes['pg/text@1']['output'] | null;
-    activities: public_Activity[];
     enrollments: public_Enrollment[];
-    readonly [RelationKeys]?: 'activities' | 'enrollments';
+    readonly [RelationKeys]?: 'enrollments';
   };
   export type public_Enrollment = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -614,15 +609,13 @@ export namespace Models {
   export type public_Activity = {
     id: CodecTypes['pg/uuid@1']['output'];
     evaluationId: CodecTypes['pg/uuid@1']['output'];
-    subjectId: CodecTypes['pg/uuid@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     weight: CodecTypes['pg/float8@1']['output'];
     description: CodecTypes['pg/text@1']['output'] | null;
     evaluation: public_Evaluation;
     grades: public_Grade[];
     subActivities: public_SubActivity[];
-    subject: public_Subject;
-    readonly [RelationKeys]?: 'evaluation' | 'grades' | 'subActivities' | 'subject';
+    readonly [RelationKeys]?: 'evaluation' | 'grades' | 'subActivities';
   };
   export type public_SubActivity = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -747,11 +740,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
                 };
-                readonly subjectId: {
-                  readonly nativeType: 'uuid';
-                  readonly codecId: 'pg/uuid@1';
-                  readonly nullable: false;
-                };
                 readonly name: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -773,26 +761,12 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [
-                { readonly columns: readonly ['evaluationId', 'subjectId', 'name'] },
-              ];
+              uniques: readonly [{ readonly columns: readonly ['evaluationId', 'name'] }];
               indexes: readonly [
-                {
-                  readonly name: 'activities_evaluationId_subjectId_idx_6798d1b8';
-                  readonly prefix: 'activities_evaluationId_subjectId_idx';
-                  readonly columns: readonly ['evaluationId', 'subjectId'];
-                  readonly unique: false;
-                },
                 {
                   readonly name: 'activities_evaluationId_idx_668799a5';
                   readonly prefix: 'activities_evaluationId_idx';
                   readonly columns: readonly ['evaluationId'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'activities_subjectId_idx_84df2a1d';
-                  readonly prefix: 'activities_subjectId_idx';
-                  readonly columns: readonly ['subjectId'];
                   readonly unique: false;
                 },
               ];
@@ -806,18 +780,6 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'evaluations';
-                    readonly columns: readonly ['id'];
-                  };
-                },
-                {
-                  readonly source: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'activities';
-                    readonly columns: readonly ['subjectId'];
-                  };
-                  readonly target: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'subjects';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -1422,10 +1384,6 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
-              readonly subjectId: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
-              };
               readonly name: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -1474,18 +1432,6 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['activityId'];
                 };
               };
-              readonly subject: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Subject';
-                };
-                readonly cardinality: 'N:1';
-                readonly nullable: false;
-                readonly on: {
-                  readonly localFields: readonly ['subjectId'];
-                  readonly targetFields: readonly ['id'];
-                };
-              };
             };
             readonly storage: {
               readonly table: 'activities';
@@ -1493,7 +1439,6 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly id: { readonly column: 'id' };
                 readonly evaluationId: { readonly column: 'evaluationId' };
-                readonly subjectId: { readonly column: 'subjectId' };
                 readonly name: { readonly column: 'name' };
                 readonly weight: { readonly column: 'weight' };
                 readonly description: { readonly column: 'description' };
@@ -1924,17 +1869,6 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
-              readonly activities: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Activity';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['subjectId'];
-                };
-              };
               readonly enrollments: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;

@@ -28,6 +28,11 @@ export class PrismaEnrollmentRepository implements IEnrollmentRepository {
     return rows.map(toEntity);
   }
 
+  async findAllByAcademicYearId(academicYearId: string): Promise<Enrollment[]> {
+    const rows = await db.orm.public.Enrollment.where({ academicYearId }).all();
+    return rows.map(toEntity);
+  }
+
   async findById(id: string): Promise<Enrollment | null> {
     const row = await db.orm.public.Enrollment.first({ id });
     return row ? toEntity(row) : null;

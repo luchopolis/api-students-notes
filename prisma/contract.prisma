@@ -70,6 +70,7 @@ model Subject {
   description String?
 
   enrollments Enrollment[]
+  activities  Activity[]
 
   @@index([code])
   @@map("subjects")
@@ -109,16 +110,18 @@ model Evaluation {
 model Activity {
   id           Uuid       @id @default(uuid())
   evaluationId Uuid
+  subjectId    Uuid
   name         String
   weight       Float      @default(100.0)
   description  String?
 
   evaluation   Evaluation   @relation(fields: [evaluationId], references: [id])
+  subject      Subject      @relation(fields: [subjectId], references: [id])
   subActivities SubActivity[]
   grades       Grade[]
 
-  @@unique([evaluationId, name])
-  @@index([evaluationId])
+  @@unique([evaluationId, subjectId, name])
+  @@index([evaluationId, subjectId])
   @@map("activities")
 }
 
@@ -142,7 +145,7 @@ model Grade {
   enrollmentId   Uuid
   activityId     Uuid?
   subActivityId  Uuid?
-  gradeValue     Numeric(5, 2) @default("0.00")
+  gradeValue     Numeric(5, 2)
   submissionDate DateString?
   status         GradeStatus @default(PENDING)
 

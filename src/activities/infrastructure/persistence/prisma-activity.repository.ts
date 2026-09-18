@@ -7,6 +7,7 @@ import { UpdateActivityDto } from '../../application/dtos/update-activity.dto.js
 type ActivityRow = {
   id: string;
   evaluationId: string;
+  subjectId: string;
   name: string;
   weight: number;
   description: string | null;
@@ -18,8 +19,10 @@ function toEntity(row: ActivityRow): Activity {
 
 @Injectable()
 export class PrismaActivityRepository implements IActivityRepository {
-  async findAllByEvaluationId(evaluationId: string): Promise<Activity[]> {
-    const rows = await db.orm.public.Activity.where({ evaluationId }).all();
+  async findAllByEvaluationId(evaluationId: string, subjectId?: string): Promise<Activity[]> {
+    const rows = await db.orm.public.Activity.where(
+      subjectId ? { evaluationId, subjectId } : { evaluationId },
+    ).all();
     return rows.map(toEntity);
   }
 
@@ -31,6 +34,7 @@ export class PrismaActivityRepository implements IActivityRepository {
   async create(data: CreateActivityInput): Promise<Activity> {
     const row = await db.orm.public.Activity.create({
       evaluationId: data.evaluationId,
+      subjectId: data.subjectId,
       name: data.name,
       weight: data.weight,
       description: data.description ?? null,

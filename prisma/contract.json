@@ -223,6 +223,13 @@
                   "kind": "scalar"
                 }
               },
+              "subjectId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
               "weight": {
                 "nullable": false,
                 "type": {
@@ -277,6 +284,22 @@
                   "model": "SubActivity",
                   "namespace": "public"
                 }
+              },
+              "subject": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "subjectId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Subject",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -292,6 +315,9 @@
                 },
                 "name": {
                   "column": "name"
+                },
+                "subjectId": {
+                  "column": "subjectId"
                 },
                 "weight": {
                   "column": "weight"
@@ -970,6 +996,21 @@
               }
             },
             "relations": {
+              "activities": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "subjectId"
+                  ]
+                },
+                "to": {
+                  "model": "Activity",
+                  "namespace": "public"
+                }
+              },
               "enrollments": {
                 "cardinality": "1:N",
                 "on": {
@@ -1162,6 +1203,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "subjectId": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
                 "weight": {
                   "codecId": "pg/float8@1",
                   "default": {
@@ -1188,6 +1234,22 @@
                     "namespaceId": "public",
                     "tableName": "evaluations"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "subjectId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "activities"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "subjects"
+                  }
                 }
               ],
               "indexes": [
@@ -1197,6 +1259,23 @@
                   ],
                   "name": "activities_evaluationId_idx_668799a5",
                   "prefix": "activities_evaluationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "evaluationId",
+                    "subjectId"
+                  ],
+                  "name": "activities_evaluationId_subjectId_idx_6798d1b8",
+                  "prefix": "activities_evaluationId_subjectId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "subjectId"
+                  ],
+                  "name": "activities_subjectId_idx_84df2a1d",
+                  "prefix": "activities_subjectId_idx",
                   "unique": false
                 }
               ],
@@ -1209,6 +1288,7 @@
                 {
                   "columns": [
                     "evaluationId",
+                    "subjectId",
                     "name"
                   ]
                 }
@@ -1454,10 +1534,6 @@
                 },
                 "gradeValue": {
                   "codecId": "pg/numeric@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": "0.00"
-                  },
                   "nativeType": "numeric",
                   "nullable": false,
                   "typeParams": {
@@ -1889,7 +1965,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d71ff45954967da4a71cbc391f3fbab73936515901070e365e58ee5f20514688"
+    "storageHash": "a36cc59b67c0f2420b914bdbf141c2e0b33bd564ba6db0d2b41fff1d991b3c06"
   },
   "execution": {
     "executionHash": "f4de0efdf5b8533a4f7151bda857b943258632c9dc0ca5b9be4457e5e4c6acac",
