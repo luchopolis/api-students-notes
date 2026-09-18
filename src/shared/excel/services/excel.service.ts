@@ -4,7 +4,7 @@ import ExcelJs from 'exceljs'
 import { dirname, join} from 'node:path';
 import { fileURLToPath } from 'node:url';
 import jszip, { JSZipObject } from 'jszip';
-import { EMPTY_EXCEL_FILE_NAME } from '../domain/helpers/period-mapped';
+import { EMPTY_EXCEL_FILE_NAME } from '../domain/helpers/period-mapped.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -17,6 +17,22 @@ export class ExcelService {
     const filePath = join(__dirname, fileName)
     try {
       await workbook.xlsx.readFile(filePath)
+      const worksheet = workbook.getWorksheet(pageToLoad)
+      return {
+        worksheet,
+        workbook
+      };
+    } catch (error) {
+      console.log(error)
+      throw new InternalServerErrorException("Failed open file")
+    }
+  }
+
+  async openExcelFileFromBuffer(file: Buffer, pageToLoad: number = 1) {
+    try {
+      const workbook = new ExcelJs.Workbook()
+      await workbook.xlsx.load(file as any)
+
       const worksheet = workbook.getWorksheet(pageToLoad)
       return {
         worksheet,

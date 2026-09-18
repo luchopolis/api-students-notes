@@ -12,12 +12,24 @@ enum EvaluationType {
   EXAM
 }
 
-model AcademicYear {
-  id        Uuid       @id @default(uuid())
-  yearName  String     @unique // "2024-A", "2025-B"
-  startDate Date
-  endDate   Date
+model Teacher {
+  id    Uuid   @id @default(uuid())
+  name  String
+  email String @unique
 
+  academicYears AcademicYear[]
+
+  @@map("teachers")
+}
+
+model AcademicYear {
+  id         Uuid       @id @default(uuid())
+  yearName   String     @unique // "2024-A", "2025-B"
+  startDate  DateString
+  endDate    DateString
+  teacherId  Uuid
+
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
   periods     Period[]
   enrollments Enrollment[]
 
@@ -43,7 +55,7 @@ model Student {
   firstName   String
   lastName1   String
   lastName2   String?
-  birthDate   Date
+  birthDate   DateString
   email       String       @unique
 
   enrollments Enrollment[]
@@ -68,15 +80,14 @@ model Enrollment {
   studentId        Uuid
   subjectId        Uuid
   academicYearId   Uuid
-  enrollmentNumber Int          @unique
-  registrationDate Date
+  registrationDate DateString
 
   student          Student      @relation(fields: [studentId], references: [id])
   subject          Subject      @relation(fields: [subjectId], references: [id])
   academicYear     AcademicYear @relation(fields: [academicYearId], references: [id])
   grades           Grade[]
 
-  @@unique([studentId, subjectId])
+  @@unique([studentId, subjectId, academicYearId])
   @@map("enrollments")
 }
 
@@ -98,11 +109,12 @@ model Evaluation {
 model Activity {
   id           Uuid       @id @default(uuid())
   evaluationId Uuid
-  name         String     
-  weight       Float      @default(100.0) 
+  name         String
+  weight       Float      @default(100.0)
   description  String?
 
-  evaluation   Evaluation @relation(fields: [evaluationId], references: [id])
+  evaluation   Evaluation   @relation(fields: [evaluationId], references: [id])
+  subActivities SubActivity[]
   grades       Grade[]
 
   @@unique([evaluationId, name])
@@ -110,17 +122,35 @@ model Activity {
   @@map("activities")
 }
 
+model SubActivity {
+  id          Uuid    @id @default(uuid())
+  activityId  Uuid
+  name        String
+  weight      Float
+  description String?
+
+  activity    Activity @relation(fields: [activityId], references: [id])
+  grades      Grade[]
+
+  @@unique([activityId, name])
+  @@index([activityId])
+  @@map("sub_activities")
+}
+
 model Grade {
   id             Uuid        @id @default(uuid())
   enrollmentId   Uuid
-  activityId     Uuid
+  activityId     Uuid?
+  subActivityId  Uuid?
   gradeValue     Numeric(5, 2) @default("0.00")
-  submissionDate Date?
+  submissionDate DateString?
   status         GradeStatus @default(PENDING)
 
-  enrollment     Enrollment  @relation(fields: [enrollmentId], references: [id])
-  activity       Activity    @relation(fields: [activityId], references: [id])
+  enrollment     Enrollment   @relation(fields: [enrollmentId], references: [id])
+  activity       Activity?    @relation(fields: [activityId], references: [id])
+  subActivity    SubActivity? @relation(fields: [subActivityId], references: [id])
 
   @@unique([enrollmentId, activityId])
+  @@unique([enrollmentId, subActivityId])
   @@map("grades")
 }

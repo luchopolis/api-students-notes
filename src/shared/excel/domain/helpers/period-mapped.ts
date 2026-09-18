@@ -13,18 +13,6 @@ export enum PeriodNotesColumnPosition {
     ENote = "ENote",
 }
 
-export enum FirstPeriod {
-    FNote = 'E',
-    SNote =  'G',
-    ENote = 'I'
-}
-
-export enum SecondPeriod {
-    FNote = 'E',
-    SNote =  'G',
-    ENote = 'I'
-}
-
 export const PeriodMapped = {
     First: {
         FNote:'E',

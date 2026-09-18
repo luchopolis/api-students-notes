@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'35b533824a7e56957f34ac98e6f8af25eaa0ee48041665a0a94e4cb61d062b75'>;
+  StorageHashBase<'d71ff45954967da4a71cbc391f3fbab73936515901070e365e58ee5f20514688'>;
 export type ExecutionHash =
-  ExecutionHashBase<'b862babd13b2dd5f9aa2208793fb5c3fa24301059b7125773c60c9dc9abfa632'>;
+  ExecutionHashBase<'f4de0efdf5b8533a4f7151bda857b943258632c9dc0ca5b9be4457e5e4c6acac'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -245,8 +245,9 @@ export type FieldOutputTypes = {
     readonly AcademicYear: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly yearName: CodecTypes['pg/text@1']['output'];
-      readonly startDate: CodecTypes['pg/date-temporal@1']['output'];
-      readonly endDate: CodecTypes['pg/date-temporal@1']['output'];
+      readonly startDate: CodecTypes['pg/date-string@1']['output'];
+      readonly endDate: CodecTypes['pg/date-string@1']['output'];
+      readonly teacherId: CodecTypes['pg/uuid@1']['output'];
     };
     readonly Activity: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -260,8 +261,7 @@ export type FieldOutputTypes = {
       readonly studentId: CodecTypes['pg/uuid@1']['output'];
       readonly subjectId: CodecTypes['pg/uuid@1']['output'];
       readonly academicYearId: CodecTypes['pg/uuid@1']['output'];
-      readonly enrollmentNumber: CodecTypes['pg/int4@1']['output'];
-      readonly registrationDate: CodecTypes['pg/date-temporal@1']['output'];
+      readonly registrationDate: CodecTypes['pg/date-string@1']['output'];
     };
     readonly Evaluation: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -273,9 +273,10 @@ export type FieldOutputTypes = {
     readonly Grade: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly enrollmentId: CodecTypes['pg/uuid@1']['output'];
-      readonly activityId: CodecTypes['pg/uuid@1']['output'];
+      readonly activityId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly subActivityId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly gradeValue: Numeric<5, 2>;
-      readonly submissionDate: CodecTypes['pg/date-temporal@1']['output'] | null;
+      readonly submissionDate: CodecTypes['pg/date-string@1']['output'] | null;
       readonly status: 'PENDING' | 'SUBMITTED' | 'GRADING';
     };
     readonly Period: {
@@ -290,14 +291,26 @@ export type FieldOutputTypes = {
       readonly firstName: CodecTypes['pg/text@1']['output'];
       readonly lastName1: CodecTypes['pg/text@1']['output'];
       readonly lastName2: CodecTypes['pg/text@1']['output'] | null;
-      readonly birthDate: CodecTypes['pg/date-temporal@1']['output'];
+      readonly birthDate: CodecTypes['pg/date-string@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
+    };
+    readonly SubActivity: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly activityId: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly weight: CodecTypes['pg/float8@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly Subject: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly code: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
+    };
+    readonly Teacher: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly email: CodecTypes['pg/text@1']['output'];
     };
   };
 };
@@ -306,8 +319,9 @@ export type FieldInputTypes = {
     readonly AcademicYear: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly yearName: CodecTypes['pg/text@1']['input'];
-      readonly startDate: CodecTypes['pg/date-temporal@1']['input'];
-      readonly endDate: CodecTypes['pg/date-temporal@1']['input'];
+      readonly startDate: CodecTypes['pg/date-string@1']['input'];
+      readonly endDate: CodecTypes['pg/date-string@1']['input'];
+      readonly teacherId: CodecTypes['pg/uuid@1']['input'];
     };
     readonly Activity: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -321,8 +335,7 @@ export type FieldInputTypes = {
       readonly studentId: CodecTypes['pg/uuid@1']['input'];
       readonly subjectId: CodecTypes['pg/uuid@1']['input'];
       readonly academicYearId: CodecTypes['pg/uuid@1']['input'];
-      readonly enrollmentNumber: CodecTypes['pg/int4@1']['input'];
-      readonly registrationDate: CodecTypes['pg/date-temporal@1']['input'];
+      readonly registrationDate: CodecTypes['pg/date-string@1']['input'];
     };
     readonly Evaluation: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -334,9 +347,10 @@ export type FieldInputTypes = {
     readonly Grade: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly enrollmentId: CodecTypes['pg/uuid@1']['input'];
-      readonly activityId: CodecTypes['pg/uuid@1']['input'];
+      readonly activityId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly subActivityId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly gradeValue: CodecTypes['pg/numeric@1']['input'];
-      readonly submissionDate: CodecTypes['pg/date-temporal@1']['input'] | null;
+      readonly submissionDate: CodecTypes['pg/date-string@1']['input'] | null;
       readonly status: 'PENDING' | 'SUBMITTED' | 'GRADING';
     };
     readonly Period: {
@@ -351,8 +365,15 @@ export type FieldInputTypes = {
       readonly firstName: CodecTypes['pg/text@1']['input'];
       readonly lastName1: CodecTypes['pg/text@1']['input'];
       readonly lastName2: CodecTypes['pg/text@1']['input'] | null;
-      readonly birthDate: CodecTypes['pg/date-temporal@1']['input'];
+      readonly birthDate: CodecTypes['pg/date-string@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
+    };
+    readonly SubActivity: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly activityId: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly weight: CodecTypes['pg/float8@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly Subject: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -360,14 +381,20 @@ export type FieldInputTypes = {
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
     };
+    readonly Teacher: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly email: CodecTypes['pg/text@1']['input'];
+    };
   };
 };
 export type StorageColumnTypes = {
   readonly public: {
     readonly academic_years: {
-      readonly endDate: CodecTypes['pg/date-temporal@1']['output'];
+      readonly endDate: CodecTypes['pg/date-string@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
-      readonly startDate: CodecTypes['pg/date-temporal@1']['output'];
+      readonly startDate: CodecTypes['pg/date-string@1']['output'];
+      readonly teacherId: CodecTypes['pg/uuid@1']['output'];
       readonly yearName: CodecTypes['pg/text@1']['output'];
     };
     readonly activities: {
@@ -379,9 +406,8 @@ export type StorageColumnTypes = {
     };
     readonly enrollments: {
       readonly academicYearId: CodecTypes['pg/uuid@1']['output'];
-      readonly enrollmentNumber: CodecTypes['pg/int4@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
-      readonly registrationDate: CodecTypes['pg/date-temporal@1']['output'];
+      readonly registrationDate: CodecTypes['pg/date-string@1']['output'];
       readonly studentId: CodecTypes['pg/uuid@1']['output'];
       readonly subjectId: CodecTypes['pg/uuid@1']['output'];
     };
@@ -393,12 +419,13 @@ export type StorageColumnTypes = {
       readonly weight: CodecTypes['pg/float8@1']['output'];
     };
     readonly grades: {
-      readonly activityId: CodecTypes['pg/uuid@1']['output'];
+      readonly activityId: CodecTypes['pg/uuid@1']['output'] | null;
       readonly enrollmentId: CodecTypes['pg/uuid@1']['output'];
       readonly gradeValue: Numeric<5, 2>;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly status: 'PENDING' | 'SUBMITTED' | 'GRADING';
-      readonly submissionDate: CodecTypes['pg/date-temporal@1']['output'] | null;
+      readonly subActivityId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly submissionDate: CodecTypes['pg/date-string@1']['output'] | null;
     };
     readonly periods: {
       readonly academicYearId: CodecTypes['pg/uuid@1']['output'];
@@ -407,7 +434,7 @@ export type StorageColumnTypes = {
       readonly number: CodecTypes['pg/int4@1']['output'];
     };
     readonly students: {
-      readonly birthDate: CodecTypes['pg/date-temporal@1']['output'];
+      readonly birthDate: CodecTypes['pg/date-string@1']['output'];
       readonly dni: CodecTypes['pg/text@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly firstName: CodecTypes['pg/text@1']['output'];
@@ -415,9 +442,21 @@ export type StorageColumnTypes = {
       readonly lastName1: CodecTypes['pg/text@1']['output'];
       readonly lastName2: CodecTypes['pg/text@1']['output'] | null;
     };
+    readonly sub_activities: {
+      readonly activityId: CodecTypes['pg/uuid@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly weight: CodecTypes['pg/float8@1']['output'];
+    };
     readonly subjects: {
       readonly code: CodecTypes['pg/text@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+    };
+    readonly teachers: {
+      readonly email: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
     };
@@ -426,9 +465,10 @@ export type StorageColumnTypes = {
 export type StorageColumnInputTypes = {
   readonly public: {
     readonly academic_years: {
-      readonly endDate: CodecTypes['pg/date-temporal@1']['input'];
+      readonly endDate: CodecTypes['pg/date-string@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
-      readonly startDate: CodecTypes['pg/date-temporal@1']['input'];
+      readonly startDate: CodecTypes['pg/date-string@1']['input'];
+      readonly teacherId: CodecTypes['pg/uuid@1']['input'];
       readonly yearName: CodecTypes['pg/text@1']['input'];
     };
     readonly activities: {
@@ -440,9 +480,8 @@ export type StorageColumnInputTypes = {
     };
     readonly enrollments: {
       readonly academicYearId: CodecTypes['pg/uuid@1']['input'];
-      readonly enrollmentNumber: CodecTypes['pg/int4@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
-      readonly registrationDate: CodecTypes['pg/date-temporal@1']['input'];
+      readonly registrationDate: CodecTypes['pg/date-string@1']['input'];
       readonly studentId: CodecTypes['pg/uuid@1']['input'];
       readonly subjectId: CodecTypes['pg/uuid@1']['input'];
     };
@@ -454,12 +493,13 @@ export type StorageColumnInputTypes = {
       readonly weight: CodecTypes['pg/float8@1']['input'];
     };
     readonly grades: {
-      readonly activityId: CodecTypes['pg/uuid@1']['input'];
+      readonly activityId: CodecTypes['pg/uuid@1']['input'] | null;
       readonly enrollmentId: CodecTypes['pg/uuid@1']['input'];
       readonly gradeValue: CodecTypes['pg/numeric@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly status: 'PENDING' | 'SUBMITTED' | 'GRADING';
-      readonly submissionDate: CodecTypes['pg/date-temporal@1']['input'] | null;
+      readonly subActivityId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly submissionDate: CodecTypes['pg/date-string@1']['input'] | null;
     };
     readonly periods: {
       readonly academicYearId: CodecTypes['pg/uuid@1']['input'];
@@ -468,7 +508,7 @@ export type StorageColumnInputTypes = {
       readonly number: CodecTypes['pg/int4@1']['input'];
     };
     readonly students: {
-      readonly birthDate: CodecTypes['pg/date-temporal@1']['input'];
+      readonly birthDate: CodecTypes['pg/date-string@1']['input'];
       readonly dni: CodecTypes['pg/text@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly firstName: CodecTypes['pg/text@1']['input'];
@@ -476,14 +516,147 @@ export type StorageColumnInputTypes = {
       readonly lastName1: CodecTypes['pg/text@1']['input'];
       readonly lastName2: CodecTypes['pg/text@1']['input'] | null;
     };
+    readonly sub_activities: {
+      readonly activityId: CodecTypes['pg/uuid@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly weight: CodecTypes['pg/float8@1']['input'];
+    };
     readonly subjects: {
       readonly code: CodecTypes['pg/text@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
     };
+    readonly teachers: {
+      readonly email: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+    };
   };
 };
+
+export namespace Models {
+  export type public_Teacher = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    email: CodecTypes['pg/text@1']['output'];
+    academicYears: public_AcademicYear[];
+    readonly [RelationKeys]?: 'academicYears';
+  };
+  export type public_AcademicYear = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    yearName: CodecTypes['pg/text@1']['output'];
+    startDate: CodecTypes['pg/date-string@1']['output'];
+    endDate: CodecTypes['pg/date-string@1']['output'];
+    teacherId: CodecTypes['pg/uuid@1']['output'];
+    enrollments: public_Enrollment[];
+    periods: public_Period[];
+    teacher: public_Teacher;
+    readonly [RelationKeys]?: 'enrollments' | 'periods' | 'teacher';
+  };
+  export type public_Period = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    academicYearId: CodecTypes['pg/uuid@1']['output'];
+    number: CodecTypes['pg/int4@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    academicYear: public_AcademicYear;
+    evaluations: public_Evaluation[];
+    readonly [RelationKeys]?: 'academicYear' | 'evaluations';
+  };
+  export type public_Student = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    dni: CodecTypes['pg/text@1']['output'];
+    firstName: CodecTypes['pg/text@1']['output'];
+    lastName1: CodecTypes['pg/text@1']['output'];
+    lastName2: CodecTypes['pg/text@1']['output'] | null;
+    birthDate: CodecTypes['pg/date-string@1']['output'];
+    email: CodecTypes['pg/text@1']['output'];
+    enrollments: public_Enrollment[];
+    readonly [RelationKeys]?: 'enrollments';
+  };
+  export type public_Subject = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    code: CodecTypes['pg/text@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    description: CodecTypes['pg/text@1']['output'] | null;
+    enrollments: public_Enrollment[];
+    readonly [RelationKeys]?: 'enrollments';
+  };
+  export type public_Enrollment = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    studentId: CodecTypes['pg/uuid@1']['output'];
+    subjectId: CodecTypes['pg/uuid@1']['output'];
+    academicYearId: CodecTypes['pg/uuid@1']['output'];
+    registrationDate: CodecTypes['pg/date-string@1']['output'];
+    academicYear: public_AcademicYear;
+    grades: public_Grade[];
+    student: public_Student;
+    subject: public_Subject;
+    readonly [RelationKeys]?: 'academicYear' | 'grades' | 'student' | 'subject';
+  };
+  export type public_Evaluation = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    periodId: CodecTypes['pg/uuid@1']['output'];
+    type: 'NOTE_1' | 'NOTE_2' | 'EXAM';
+    weight: CodecTypes['pg/float8@1']['output'];
+    activityOrder: CodecTypes['pg/int4@1']['output'];
+    activities: public_Activity[];
+    period: public_Period;
+    readonly [RelationKeys]?: 'activities' | 'period';
+  };
+  export type public_Activity = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    evaluationId: CodecTypes['pg/uuid@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    weight: CodecTypes['pg/float8@1']['output'];
+    description: CodecTypes['pg/text@1']['output'] | null;
+    evaluation: public_Evaluation;
+    grades: public_Grade[];
+    subActivities: public_SubActivity[];
+    readonly [RelationKeys]?: 'evaluation' | 'grades' | 'subActivities';
+  };
+  export type public_SubActivity = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    activityId: CodecTypes['pg/uuid@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    weight: CodecTypes['pg/float8@1']['output'];
+    description: CodecTypes['pg/text@1']['output'] | null;
+    activity: public_Activity;
+    grades: public_Grade[];
+    readonly [RelationKeys]?: 'activity' | 'grades';
+  };
+  export type public_Grade = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    enrollmentId: CodecTypes['pg/uuid@1']['output'];
+    activityId: CodecTypes['pg/uuid@1']['output'] | null;
+    subActivityId: CodecTypes['pg/uuid@1']['output'] | null;
+    gradeValue: Numeric<5, 2>;
+    submissionDate: CodecTypes['pg/date-string@1']['output'] | null;
+    status: 'PENDING' | 'SUBMITTED' | 'GRADING';
+    activity: public_Activity | null;
+    enrollment: public_Enrollment;
+    subActivity: public_SubActivity | null;
+    readonly [RelationKeys]?: 'activity' | 'enrollment' | 'subActivity';
+  };
+}
+
+export declare const models: {
+  public: {
+    Teacher: Models.public_Teacher;
+    AcademicYear: Models.public_AcademicYear;
+    Period: Models.public_Period;
+    Student: Models.public_Student;
+    Subject: Models.public_Subject;
+    Enrollment: Models.public_Enrollment;
+    Evaluation: Models.public_Evaluation;
+    Activity: Models.public_Activity;
+    SubActivity: Models.public_SubActivity;
+    Grade: Models.public_Grade;
+  };
+};
+
 export type TypeMaps = TypeMapsType<
   CodecTypes,
   QueryOperationTypes,
@@ -516,19 +689,44 @@ type ContractBase = Omit<
                 };
                 readonly startDate: {
                   readonly nativeType: 'date';
-                  readonly codecId: 'pg/date-temporal@1';
+                  readonly codecId: 'pg/date-string@1';
                   readonly nullable: false;
                 };
                 readonly endDate: {
                   readonly nativeType: 'date';
-                  readonly codecId: 'pg/date-temporal@1';
+                  readonly codecId: 'pg/date-string@1';
+                  readonly nullable: false;
+                };
+                readonly teacherId: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [{ readonly columns: readonly ['yearName'] }];
-              indexes: readonly [];
-              foreignKeys: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'academic_years_teacherId_idx_bc266660';
+                  readonly prefix: 'academic_years_teacherId_idx';
+                  readonly columns: readonly ['teacherId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'academic_years';
+                    readonly columns: readonly ['teacherId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'teachers';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly activities: {
               columns: {
@@ -609,21 +807,15 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
                 };
-                readonly enrollmentNumber: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                };
                 readonly registrationDate: {
                   readonly nativeType: 'date';
-                  readonly codecId: 'pg/date-temporal@1';
+                  readonly codecId: 'pg/date-string@1';
                   readonly nullable: false;
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [
-                { readonly columns: readonly ['enrollmentNumber'] },
-                { readonly columns: readonly ['studentId', 'subjectId'] },
+                { readonly columns: readonly ['studentId', 'subjectId', 'academicYearId'] },
               ];
               indexes: readonly [
                 {
@@ -766,7 +958,12 @@ type ContractBase = Omit<
                 readonly activityId: {
                   readonly nativeType: 'uuid';
                   readonly codecId: 'pg/uuid@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
+                };
+                readonly subActivityId: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
                 };
                 readonly gradeValue: {
                   readonly nativeType: 'numeric';
@@ -780,7 +977,7 @@ type ContractBase = Omit<
                 };
                 readonly submissionDate: {
                   readonly nativeType: 'date';
-                  readonly codecId: 'pg/date-temporal@1';
+                  readonly codecId: 'pg/date-string@1';
                   readonly nullable: true;
                 };
                 readonly status: {
@@ -794,7 +991,10 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['enrollmentId', 'activityId'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['enrollmentId', 'activityId'] },
+                { readonly columns: readonly ['enrollmentId', 'subActivityId'] },
+              ];
               indexes: readonly [
                 {
                   readonly name: 'grades_enrollmentId_idx_ee5e79c5';
@@ -806,6 +1006,12 @@ type ContractBase = Omit<
                   readonly name: 'grades_activityId_idx_bf2a659e';
                   readonly prefix: 'grades_activityId_idx';
                   readonly columns: readonly ['activityId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'grades_subActivityId_idx_a433c5b7';
+                  readonly prefix: 'grades_subActivityId_idx';
+                  readonly columns: readonly ['subActivityId'];
                   readonly unique: false;
                 },
               ];
@@ -831,6 +1037,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'activities';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'grades';
+                    readonly columns: readonly ['subActivityId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'sub_activities';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -913,7 +1131,7 @@ type ContractBase = Omit<
                 };
                 readonly birthDate: {
                   readonly nativeType: 'date';
-                  readonly codecId: 'pg/date-temporal@1';
+                  readonly codecId: 'pg/date-string@1';
                   readonly nullable: false;
                 };
                 readonly email: {
@@ -929,6 +1147,59 @@ type ContractBase = Omit<
               ];
               indexes: readonly [];
               foreignKeys: readonly [];
+            };
+            readonly sub_activities: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly activityId: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly weight: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: false;
+                };
+                readonly description: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['activityId', 'name'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'sub_activities_activityId_idx_bf2a659e';
+                  readonly prefix: 'sub_activities_activityId_idx';
+                  readonly columns: readonly ['activityId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'sub_activities';
+                    readonly columns: readonly ['activityId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'activities';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly subjects: {
               columns: {
@@ -965,6 +1236,29 @@ type ContractBase = Omit<
               ];
               foreignKeys: readonly [];
             };
+            readonly teachers: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly email: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['email'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
           };
           readonly valueSet: {
             readonly EvaluationType: {
@@ -986,6 +1280,7 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly teachers: { readonly namespace: 'public' & NamespaceId; readonly model: 'Teacher' };
     readonly academic_years: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AcademicYear';
@@ -1002,6 +1297,10 @@ type ContractBase = Omit<
       readonly model: 'Evaluation';
     };
     readonly activities: { readonly namespace: 'public' & NamespaceId; readonly model: 'Activity' };
+    readonly sub_activities: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'SubActivity';
+    };
     readonly grades: { readonly namespace: 'public' & NamespaceId; readonly model: 'Grade' };
   };
   readonly domain: {
@@ -1020,11 +1319,15 @@ type ContractBase = Omit<
               };
               readonly startDate: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
               };
               readonly endDate: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
+              };
+              readonly teacherId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
             };
             readonly relations: {
@@ -1050,6 +1353,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['academicYearId'];
                 };
               };
+              readonly teacher: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Teacher';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['teacherId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'academic_years';
@@ -1059,6 +1374,7 @@ type ContractBase = Omit<
                 readonly yearName: { readonly column: 'yearName' };
                 readonly startDate: { readonly column: 'startDate' };
                 readonly endDate: { readonly column: 'endDate' };
+                readonly teacherId: { readonly column: 'teacherId' };
               };
             };
           };
@@ -1092,6 +1408,7 @@ type ContractBase = Omit<
                   readonly model: 'Evaluation';
                 };
                 readonly cardinality: 'N:1';
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['evaluationId'];
                   readonly targetFields: readonly ['id'];
@@ -1101,6 +1418,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'Grade';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['activityId'];
+                };
+              };
+              readonly subActivities: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'SubActivity';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -1139,13 +1467,9 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
-              readonly enrollmentNumber: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
               readonly registrationDate: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
               };
             };
             readonly relations: {
@@ -1155,6 +1479,7 @@ type ContractBase = Omit<
                   readonly model: 'AcademicYear';
                 };
                 readonly cardinality: 'N:1';
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['academicYearId'];
                   readonly targetFields: readonly ['id'];
@@ -1177,6 +1502,7 @@ type ContractBase = Omit<
                   readonly model: 'Student';
                 };
                 readonly cardinality: 'N:1';
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['studentId'];
                   readonly targetFields: readonly ['id'];
@@ -1188,6 +1514,7 @@ type ContractBase = Omit<
                   readonly model: 'Subject';
                 };
                 readonly cardinality: 'N:1';
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['subjectId'];
                   readonly targetFields: readonly ['id'];
@@ -1202,7 +1529,6 @@ type ContractBase = Omit<
                 readonly studentId: { readonly column: 'studentId' };
                 readonly subjectId: { readonly column: 'subjectId' };
                 readonly academicYearId: { readonly column: 'academicYearId' };
-                readonly enrollmentNumber: { readonly column: 'enrollmentNumber' };
                 readonly registrationDate: { readonly column: 'registrationDate' };
               };
             };
@@ -1248,6 +1574,7 @@ type ContractBase = Omit<
                   readonly model: 'Period';
                 };
                 readonly cardinality: 'N:1';
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['periodId'];
                   readonly targetFields: readonly ['id'];
@@ -1277,7 +1604,11 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
               readonly activityId: {
-                readonly nullable: false;
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly subActivityId: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
               readonly gradeValue: {
@@ -1290,7 +1621,7 @@ type ContractBase = Omit<
               };
               readonly submissionDate: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
               };
               readonly status: {
                 readonly nullable: false;
@@ -1304,6 +1635,7 @@ type ContractBase = Omit<
                   readonly model: 'Activity';
                 };
                 readonly cardinality: 'N:1';
+                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['activityId'];
                   readonly targetFields: readonly ['id'];
@@ -1315,8 +1647,21 @@ type ContractBase = Omit<
                   readonly model: 'Enrollment';
                 };
                 readonly cardinality: 'N:1';
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['enrollmentId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly subActivity: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'SubActivity';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['subActivityId'];
                   readonly targetFields: readonly ['id'];
                 };
               };
@@ -1328,6 +1673,7 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly enrollmentId: { readonly column: 'enrollmentId' };
                 readonly activityId: { readonly column: 'activityId' };
+                readonly subActivityId: { readonly column: 'subActivityId' };
                 readonly gradeValue: { readonly column: 'gradeValue' };
                 readonly submissionDate: { readonly column: 'submissionDate' };
                 readonly status: { readonly column: 'status' };
@@ -1360,6 +1706,7 @@ type ContractBase = Omit<
                   readonly model: 'AcademicYear';
                 };
                 readonly cardinality: 'N:1';
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['academicYearId'];
                   readonly targetFields: readonly ['id'];
@@ -1412,7 +1759,7 @@ type ContractBase = Omit<
               };
               readonly birthDate: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
               };
               readonly email: {
                 readonly nullable: false;
@@ -1443,6 +1790,66 @@ type ContractBase = Omit<
                 readonly lastName2: { readonly column: 'lastName2' };
                 readonly birthDate: { readonly column: 'birthDate' };
                 readonly email: { readonly column: 'email' };
+              };
+            };
+          };
+          readonly SubActivity: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly activityId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly weight: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly description: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly activity: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Activity';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['activityId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly grades: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Grade';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['subActivityId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'sub_activities';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly activityId: { readonly column: 'activityId' };
+                readonly name: { readonly column: 'name' };
+                readonly weight: { readonly column: 'weight' };
+                readonly description: { readonly column: 'description' };
               };
             };
           };
@@ -1486,6 +1893,44 @@ type ContractBase = Omit<
                 readonly code: { readonly column: 'code' };
                 readonly name: { readonly column: 'name' };
                 readonly description: { readonly column: 'description' };
+              };
+            };
+          };
+          readonly Teacher: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly email: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly academicYears: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AcademicYear';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['teacherId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'teachers';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly email: { readonly column: 'email' };
               };
             };
           };
@@ -1593,7 +2038,23 @@ type ContractBase = Omit<
         {
           readonly ref: {
             readonly namespace: 'public';
+            readonly table: 'sub_activities';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
             readonly table: 'subjects';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'teachers';
             readonly column: 'id';
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };

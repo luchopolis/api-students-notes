@@ -32,8 +32,16 @@
       "model": "Student",
       "namespace": "public"
     },
+    "sub_activities": {
+      "model": "SubActivity",
+      "namespace": "public"
+    },
     "subjects": {
       "model": "Subject",
+      "namespace": "public"
+    },
+    "teachers": {
+      "model": "Teacher",
       "namespace": "public"
     }
   },
@@ -82,7 +90,7 @@
               "endDate": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "kind": "scalar"
                 }
               },
@@ -96,7 +104,14 @@
               "startDate": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "teacherId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -138,6 +153,22 @@
                   "model": "Period",
                   "namespace": "public"
                 }
+              },
+              "teacher": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "teacherId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Teacher",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -150,6 +181,9 @@
                 },
                 "startDate": {
                   "column": "startDate"
+                },
+                "teacherId": {
+                  "column": "teacherId"
                 },
                 "yearName": {
                   "column": "yearName"
@@ -228,6 +262,21 @@
                   "model": "Grade",
                   "namespace": "public"
                 }
+              },
+              "subActivities": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "activityId"
+                  ]
+                },
+                "to": {
+                  "model": "SubActivity",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -261,13 +310,6 @@
                   "kind": "scalar"
                 }
               },
-              "enrollmentNumber": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -278,7 +320,7 @@
               "registrationDate": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "kind": "scalar"
                 }
               },
@@ -366,9 +408,6 @@
               "fields": {
                 "academicYearId": {
                   "column": "academicYearId"
-                },
-                "enrollmentNumber": {
-                  "column": "enrollmentNumber"
                 },
                 "id": {
                   "column": "id"
@@ -489,7 +528,7 @@
           "Grade": {
             "fields": {
               "activityId": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/uuid@1",
                   "kind": "scalar"
@@ -533,10 +572,17 @@
                   "plane": "domain"
                 }
               },
+              "subActivityId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
               "submissionDate": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "kind": "scalar"
                 }
               }
@@ -544,7 +590,7 @@
             "relations": {
               "activity": {
                 "cardinality": "N:1",
-                "nullable": false,
+                "nullable": true,
                 "on": {
                   "localFields": [
                     "activityId"
@@ -573,6 +619,22 @@
                   "model": "Enrollment",
                   "namespace": "public"
                 }
+              },
+              "subActivity": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "subActivityId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "SubActivity",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -591,6 +653,9 @@
                 },
                 "status": {
                   "column": "status"
+                },
+                "subActivityId": {
+                  "column": "subActivityId"
                 },
                 "submissionDate": {
                   "column": "submissionDate"
@@ -688,7 +753,7 @@
               "birthDate": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "kind": "scalar"
                 }
               },
@@ -780,6 +845,99 @@
               "table": "students"
             }
           },
+          "SubActivity": {
+            "fields": {
+              "activityId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "weight": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "activity": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "activityId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Activity",
+                  "namespace": "public"
+                }
+              },
+              "grades": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "subActivityId"
+                  ]
+                },
+                "to": {
+                  "model": "Grade",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "activityId": {
+                  "column": "activityId"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "weight": {
+                  "column": "weight"
+                }
+              },
+              "namespaceId": "public",
+              "table": "sub_activities"
+            }
+          },
           "Subject": {
             "fields": {
               "code": {
@@ -846,6 +1004,63 @@
               "namespaceId": "public",
               "table": "subjects"
             }
+          },
+          "Teacher": {
+            "fields": {
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "academicYears": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "teacherId"
+                  ]
+                },
+                "to": {
+                  "model": "AcademicYear",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "email": {
+                  "column": "email"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                }
+              },
+              "namespaceId": "public",
+              "table": "teachers"
+            }
           }
         }
       }
@@ -859,7 +1074,7 @@
             "academic_years": {
               "columns": {
                 "endDate": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "nativeType": "date",
                   "nullable": false
                 },
@@ -869,8 +1084,13 @@
                   "nullable": false
                 },
                 "startDate": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "nativeType": "date",
+                  "nullable": false
+                },
+                "teacherId": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "yearName": {
@@ -879,8 +1099,34 @@
                   "nullable": false
                 }
               },
-              "foreignKeys": [],
-              "indexes": [],
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "teacherId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "academic_years"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "teachers"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "teacherId"
+                  ],
+                  "name": "academic_years_teacherId_idx_bc266660",
+                  "prefix": "academic_years_teacherId_idx",
+                  "unique": false
+                }
+              ],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -975,18 +1221,13 @@
                   "nativeType": "uuid",
                   "nullable": false
                 },
-                "enrollmentNumber": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": false
-                },
                 "id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
                   "nullable": false
                 },
                 "registrationDate": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "nativeType": "date",
                   "nullable": false
                 },
@@ -1085,13 +1326,9 @@
               "uniques": [
                 {
                   "columns": [
-                    "enrollmentNumber"
-                  ]
-                },
-                {
-                  "columns": [
                     "studentId",
-                    "subjectId"
+                    "subjectId",
+                    "academicYearId"
                   ]
                 }
               ]
@@ -1208,7 +1445,7 @@
                 "activityId": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
-                  "nullable": false
+                  "nullable": true
                 },
                 "enrollmentId": {
                   "codecId": "pg/uuid@1",
@@ -1248,8 +1485,13 @@
                     "plane": "storage"
                   }
                 },
+                "subActivityId": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": true
+                },
                 "submissionDate": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "nativeType": "date",
                   "nullable": true
                 }
@@ -1286,6 +1528,22 @@
                     "namespaceId": "public",
                     "tableName": "activities"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "subActivityId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "grades"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sub_activities"
+                  }
                 }
               ],
               "indexes": [
@@ -1304,6 +1562,14 @@
                   "name": "grades_enrollmentId_idx_ee5e79c5",
                   "prefix": "grades_enrollmentId_idx",
                   "unique": false
+                },
+                {
+                  "columns": [
+                    "subActivityId"
+                  ],
+                  "name": "grades_subActivityId_idx_a433c5b7",
+                  "prefix": "grades_subActivityId_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -1316,6 +1582,12 @@
                   "columns": [
                     "enrollmentId",
                     "activityId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "enrollmentId",
+                    "subActivityId"
                   ]
                 }
               ]
@@ -1388,7 +1660,7 @@
             "students": {
               "columns": {
                 "birthDate": {
-                  "codecId": "pg/date-temporal@1",
+                  "codecId": "pg/date-string@1",
                   "nativeType": "date",
                   "nullable": false
                 },
@@ -1443,6 +1715,76 @@
                 }
               ]
             },
+            "sub_activities": {
+              "columns": {
+                "activityId": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "weight": {
+                  "codecId": "pg/float8@1",
+                  "nativeType": "float8",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "activityId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sub_activities"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "activities"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "activityId"
+                  ],
+                  "name": "sub_activities_activityId_idx_bf2a659e",
+                  "prefix": "sub_activities_activityId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "activityId",
+                    "name"
+                  ]
+                }
+              ]
+            },
             "subjects": {
               "columns": {
                 "code": {
@@ -1489,6 +1831,39 @@
                   ]
                 }
               ]
+            },
+            "teachers": {
+              "columns": {
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "email"
+                  ]
+                }
+              ]
             }
           },
           "valueSet": {
@@ -1514,10 +1889,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "35b533824a7e56957f34ac98e6f8af25eaa0ee48041665a0a94e4cb61d062b75"
+    "storageHash": "d71ff45954967da4a71cbc391f3fbab73936515901070e365e58ee5f20514688"
   },
   "execution": {
-    "executionHash": "b862babd13b2dd5f9aa2208793fb5c3fa24301059b7125773c60c9dc9abfa632",
+    "executionHash": "f4de0efdf5b8533a4f7151bda857b943258632c9dc0ca5b9be4457e5e4c6acac",
     "mutations": {
       "defaults": [
         {
@@ -1605,7 +1980,29 @@
           "ref": {
             "column": "id",
             "namespace": "public",
+            "table": "sub_activities"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
             "table": "subjects"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "teachers"
           }
         }
       ]
