@@ -12,6 +12,11 @@ enum EvaluationType {
   EXAM
 }
 
+enum Gender {
+  F
+  M
+}
+
 model Teacher {
   id    Uuid   @id @default(uuid())
   name  String
@@ -44,9 +49,26 @@ model Period {
   evaluations    Evaluation[]
 
   academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  files          PeriodFile[]
 
   @@unique([academicYearId, number])
   @@map("periods")
+}
+
+
+model PeriodFile {
+  id          Uuid            @id @default(uuid())
+  periodId    Uuid
+  subjectId   Uuid
+  fileName    String
+  storageKey  String          @unique // key S3
+  generatedAt TimestamptzString(3) @default(now())
+
+  period      Period          @relation(fields: [periodId], references: [id])
+  subject     Subject         @relation(fields: [subjectId], references: [id])
+
+  @@index([periodId, subjectId, generatedAt])
+  @@map("period_files")
 }
 
 model Student {
@@ -55,6 +77,7 @@ model Student {
   firstName   String
   lastName1   String
   lastName2   String?
+  gender      Gender?
   birthDate   DateString
   email       String       @unique
 
@@ -71,6 +94,7 @@ model Subject {
 
   enrollments Enrollment[]
   activities  Activity[]
+  periodFiles PeriodFile[]
 
   @@index([code])
   @@map("subjects")

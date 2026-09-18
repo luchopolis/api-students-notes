@@ -3,6 +3,7 @@ export const RowStartIndex = 10 // the rows to field start at this row number
 
 export const EMPTY_EXCEL_FILE_NAME = 'empty.xlsx'
 
+export const STUDENT_NUMBER_COLUMN = 'A';
 export const STUDENT_NIE_COLUMN = 'B';
 export const STUDENT_START_COLUMN = 'C';
 export const STUDENT_GENDER_COLUMN = 'D'
@@ -23,8 +24,25 @@ export const PeriodMapped = {
         FNote:'L',
         SNote:'N',
         ENote:'P'
+    },
+    Thrid: {
+        FNote: 'S',
+        SNote: 'U',
+        ENote: 'W'
+    },
+    Fourt: {
+        FNote: 'Z',
+        SNote: 'AB',
+        ENote: 'AD'
     }
 }
+
+export const PeriodKeyByNumber = {
+    1: 'First',
+    2: 'Second',
+    3: 'Thrid',
+    4: 'Fourt',
+} as const
 
 export const FakeStudentsNotes = [
     {

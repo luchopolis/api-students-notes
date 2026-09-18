@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { db } from '../../../../prisma/db.js';
 import { IStudentRepository } from '../../domain/repositories/student.repository.js';
-import { Student } from '../../domain/entities/student.entity.js';
+import { Student, type Gender } from '../../domain/entities/student.entity.js';
 import { CreateStudentDto } from '../../application/dtos/create-student.dto.js';
 import { UpdateStudentDto } from '../../application/dtos/update-student.dto.js';
 
@@ -11,6 +11,7 @@ type StudentRow = {
   firstName: string;
   lastName1: string;
   lastName2: string | null;
+  gender: Gender | null;
   birthDate: string;
   email: string;
 };
@@ -47,6 +48,7 @@ export class PrismaStudentRepository implements IStudentRepository {
       firstName: data.firstName,
       lastName1: data.lastName1,
       lastName2: data.lastName2 ?? null,
+      gender: data.gender ?? null,
       birthDate: data.birthDate,
       email: data.email,
     });
@@ -62,6 +64,7 @@ export class PrismaStudentRepository implements IStudentRepository {
       ...(data.firstName !== undefined && { firstName: data.firstName }),
       ...(data.lastName1 !== undefined && { lastName1: data.lastName1 }),
       ...(data.lastName2 !== undefined && { lastName2: data.lastName2 }),
+      ...(data.gender !== undefined && { gender: data.gender }),
       ...(data.birthDate !== undefined && { birthDate: data.birthDate }),
       ...(data.email !== undefined && { email: data.email }),
     });

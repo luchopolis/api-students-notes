@@ -24,6 +24,10 @@
       "model": "Grade",
       "namespace": "public"
     },
+    "period_files": {
+      "model": "PeriodFile",
+      "namespace": "public"
+    },
     "periods": {
       "model": "Period",
       "namespace": "public"
@@ -63,6 +67,19 @@
               {
                 "name": "EXAM",
                 "value": "EXAM"
+              }
+            ]
+          },
+          "Gender": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "F",
+                "value": "F"
+              },
+              {
+                "name": "M",
+                "value": "M"
               }
             ]
           },
@@ -753,6 +770,21 @@
                   "model": "Evaluation",
                   "namespace": "public"
                 }
+              },
+              "files": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "periodId"
+                  ]
+                },
+                "to": {
+                  "model": "PeriodFile",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -772,6 +804,113 @@
               },
               "namespaceId": "public",
               "table": "periods"
+            }
+          },
+          "PeriodFile": {
+            "fields": {
+              "fileName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "generatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "periodId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "storageKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "subjectId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "period": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "periodId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Period",
+                  "namespace": "public"
+                }
+              },
+              "subject": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "subjectId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Subject",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "fileName": {
+                  "column": "fileName"
+                },
+                "generatedAt": {
+                  "column": "generatedAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "periodId": {
+                  "column": "periodId"
+                },
+                "storageKey": {
+                  "column": "storageKey"
+                },
+                "subjectId": {
+                  "column": "subjectId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "period_files"
             }
           },
           "Student": {
@@ -802,6 +941,19 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                }
+              },
+              "gender": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "Gender",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "id": {
@@ -856,6 +1008,9 @@
                 },
                 "firstName": {
                   "column": "firstName"
+                },
+                "gender": {
+                  "column": "gender"
                 },
                 "id": {
                   "column": "id"
@@ -1023,6 +1178,21 @@
                 },
                 "to": {
                   "model": "Enrollment",
+                  "namespace": "public"
+                }
+              },
+              "periodFiles": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "subjectId"
+                  ]
+                },
+                "to": {
+                  "model": "PeriodFile",
                   "namespace": "public"
                 }
               }
@@ -1668,6 +1838,121 @@
                 }
               ]
             },
+            "period_files": {
+              "columns": {
+                "fileName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "generatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "periodId": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "storageKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "subjectId": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "periodId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "period_files"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "periods"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "subjectId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "period_files"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "subjects"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "periodId"
+                  ],
+                  "name": "period_files_periodId_idx_f0176b8a",
+                  "prefix": "period_files_periodId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "periodId",
+                    "subjectId",
+                    "generatedAt"
+                  ],
+                  "name": "period_files_periodId_subjectId_generatedAt_idx_ff91f835",
+                  "prefix": "period_files_periodId_subjectId_generatedAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "subjectId"
+                  ],
+                  "name": "period_files_subjectId_idx_84df2a1d",
+                  "prefix": "period_files_subjectId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "storageKey"
+                  ]
+                }
+              ]
+            },
             "periods": {
               "columns": {
                 "academicYearId": {
@@ -1734,6 +2019,13 @@
               ]
             },
             "students": {
+              "checks": [
+                {
+                  "expression": "\"gender\" IN ('F', 'M')",
+                  "name": "students_gender_check_d6c219b7",
+                  "prefix": "students_gender_check"
+                }
+              ],
               "columns": {
                 "birthDate": {
                   "codecId": "pg/date-string@1",
@@ -1754,6 +2046,17 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "gender": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "Gender",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "id": {
                   "codecId": "pg/uuid@1",
@@ -1951,6 +2254,13 @@
                 "EXAM"
               ]
             },
+            "Gender": {
+              "kind": "valueSet",
+              "values": [
+                "F",
+                "M"
+              ]
+            },
             "GradeStatus": {
               "kind": "valueSet",
               "values": [
@@ -1965,10 +2275,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a36cc59b67c0f2420b914bdbf141c2e0b33bd564ba6db0d2b41fff1d991b3c06"
+    "storageHash": "bd50193aa72d5d430a75167157d05d76cb6582ee8731893c37747d73c8f97d7f"
   },
   "execution": {
-    "executionHash": "f4de0efdf5b8533a4f7151bda857b943258632c9dc0ca5b9be4457e5e4c6acac",
+    "executionHash": "c6f9df4d3742b01b041609650bc5a644d1f7960e08f0fa88e8472f4d93b59060",
     "mutations": {
       "defaults": [
         {
@@ -2024,6 +2334,17 @@
             "column": "id",
             "namespace": "public",
             "table": "grades"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "period_files"
           }
         },
         {

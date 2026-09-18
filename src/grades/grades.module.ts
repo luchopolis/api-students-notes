@@ -22,6 +22,6 @@ import { SubActivitiesModule } from '../sub-activities/sub-activities.module.js'
       useClass: PrismaGradeRepository,
     },
   ],
-  exports: [GRADE_REPOSITORY],
+  exports: [GRADE_REPOSITORY, GradeCalculationService],
 })
 export class GradesModule {}

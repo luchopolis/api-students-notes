@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'bd50193aa72d5d430a75167157d05d76cb6582ee8731893c37747d73c8f97d7f'>;
+  StorageHashBase<'f3760bd4caedcfb888166814201f2185d97ff8f5425b756f948d5b23fea665d9'>;
 export type ExecutionHash =
   ExecutionHashBase<'c6f9df4d3742b01b041609650bc5a644d1f7960e08f0fa88e8472f4d93b59060'>;
 export type ProfileHash =
@@ -300,7 +300,6 @@ export type FieldOutputTypes = {
       readonly firstName: CodecTypes['pg/text@1']['output'];
       readonly lastName1: CodecTypes['pg/text@1']['output'];
       readonly lastName2: CodecTypes['pg/text@1']['output'] | null;
-      readonly gender: 'F' | 'M' | null;
       readonly birthDate: CodecTypes['pg/date-string@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
     };
@@ -384,7 +383,6 @@ export type FieldInputTypes = {
       readonly firstName: CodecTypes['pg/text@1']['input'];
       readonly lastName1: CodecTypes['pg/text@1']['input'];
       readonly lastName2: CodecTypes['pg/text@1']['input'] | null;
-      readonly gender: 'F' | 'M' | null;
       readonly birthDate: CodecTypes['pg/date-string@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
     };
@@ -467,7 +465,6 @@ export type StorageColumnTypes = {
       readonly dni: CodecTypes['pg/text@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly firstName: CodecTypes['pg/text@1']['output'];
-      readonly gender: 'F' | 'M' | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly lastName1: CodecTypes['pg/text@1']['output'];
       readonly lastName2: CodecTypes['pg/text@1']['output'] | null;
@@ -551,7 +548,6 @@ export type StorageColumnInputTypes = {
       readonly dni: CodecTypes['pg/text@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly firstName: CodecTypes['pg/text@1']['input'];
-      readonly gender: 'F' | 'M' | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly lastName1: CodecTypes['pg/text@1']['input'];
       readonly lastName2: CodecTypes['pg/text@1']['input'] | null;
@@ -623,7 +619,6 @@ export namespace Models {
     firstName: CodecTypes['pg/text@1']['output'];
     lastName1: CodecTypes['pg/text@1']['output'];
     lastName2: CodecTypes['pg/text@1']['output'] | null;
-    gender: 'F' | 'M' | null;
     birthDate: CodecTypes['pg/date-string@1']['output'];
     email: CodecTypes['pg/text@1']['output'];
     enrollments: public_Enrollment[];
@@ -1298,11 +1293,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
-                readonly gender: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
-                };
                 readonly birthDate: {
                   readonly nativeType: 'date';
                   readonly codecId: 'pg/date-string@1';
@@ -1439,7 +1429,6 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly ['NOTE_1', 'NOTE_2', 'EXAM'];
             };
-            readonly Gender: { readonly kind: 'valueSet'; readonly values: readonly ['F', 'M'] };
             readonly GradeStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly ['PENDING', 'SUBMITTED', 'GRADING'];
@@ -2034,10 +2023,6 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly gender: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
               readonly birthDate: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
@@ -2069,7 +2054,6 @@ type ContractBase = Omit<
                 readonly firstName: { readonly column: 'firstName' };
                 readonly lastName1: { readonly column: 'lastName1' };
                 readonly lastName2: { readonly column: 'lastName2' };
-                readonly gender: { readonly column: 'gender' };
                 readonly birthDate: { readonly column: 'birthDate' };
                 readonly email: { readonly column: 'email' };
               };
@@ -2254,13 +2238,6 @@ type ContractBase = Omit<
               { readonly name: 'NOTE_1'; readonly value: 'NOTE_1' },
               { readonly name: 'NOTE_2'; readonly value: 'NOTE_2' },
               { readonly name: 'EXAM'; readonly value: 'EXAM' },
-            ];
-          };
-          readonly Gender: {
-            readonly codecId: 'pg/text@1';
-            readonly members: readonly [
-              { readonly name: 'F'; readonly value: 'F' },
-              { readonly name: 'M'; readonly value: 'M' },
             ];
           };
         };

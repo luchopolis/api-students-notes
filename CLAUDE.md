@@ -31,7 +31,7 @@ aplicación de gestión de notas escolares para un MVP/PoC. El sistema será uti
 
 ### Student (`students`)
 - Representa a cada estudiante matriculado
-- Campos: `id`, `dni` (único), `firstName`, `lastName1`, `lastName2` (opcional), `birthDate`, `email` (único)
+- Campos: `id`, `dni` (único), `firstName`, `lastName1`, `lastName2` (opcional), `gender` (opcional, enum `Gender`: `F`/`M`; va a la columna de género de la planilla Excel), `birthDate`, `email` (único)
 - Restricciones: `dni` y `email` deben ser únicos en toda la base de datos
 - Implementado en `src/students` (CRUD completo sobre Prisma; ver *Estado de implementación* al final)
 
@@ -83,6 +83,13 @@ aplicación de gestión de notas escolares para un MVP/PoC. El sistema será uti
   - **`activityId` y `subActivityId` son mutuamente excluyentes**: una nota apunta a una `Activity` sin sub-actividades, o a una de sus `SubActivity`, nunca a ambas. Se valida en `GradesService.create()` (400 si vienen los dos o ninguno)
 - **Nota:** el peso (`weight`) vive en `Activity`/`SubActivity`, no en `Grade` — es el mismo para todos los estudiantes, no algo por-alumno.
 - Implementado en `src/grades`: CRUD de `Grade` + `GradeCalculationService` con la lógica de la sección 4, expuesta en `GET /enrollments/:enrollmentId/grades/activities/:activityId`, `.../evaluations/:evaluationId`, `.../periods/:periodId` y `.../year`.
+
+### PeriodFile (`period_files`)
+- Historial de archivos `.xlsx` generados por período y materia. El archivo vive en S3; la tabla guarda solo la referencia.
+- Campos: `id`, `periodId` (FK), `subjectId` (FK), `fileName`, `storageKey` (único, key del objeto en S3), `generatedAt` (`TimestamptzString(3)`, texto de Postgres)
+- Sin UNIQUE sobre (`periodId`, `subjectId`) a propósito: cada generación es un snapshot nuevo y coexisten varios por período. El año se obtiene vía `period.academicYearId`.
+- Implementado en `src/period-files`: `POST /period-files` (`{ periodId, subjectId }`) genera y guarda; `GET /period-files?periodId&subjectId` lista (más reciente primero); `GET /period-files/:id/download` devuelve `{ url, fileName, expiresInSeconds }` con una URL prefirmada.
+- Al generar, si existe un archivo de un período anterior de la misma materia y año, se parte del más reciente del período anterior más cercano (nunca del mismo período); si no, de `empty.xlsx`. Los alumnos se ubican por NIE (`dni`) para no desalinear notas anteriores; los nuevos van a la primera fila libre. Las evaluaciones sin calificar por completo quedan vacías en el Excel y se reportan en `incompleteStudents`.
 
 ---
 
@@ -191,5 +198,7 @@ NOTA_FINAL_ANO =
 - **`src/students`**, **`src/teachers`**, **`src/academic-years`**, **`src/periods`**, **`src/subjects`**, **`src/enrollments`**, **`src/evaluations`**, **`src/activities`**, **`src/sub-activities`**, **`src/grades`**: CRUD completo (entidad, repositorio Prisma, servicio, controlador REST) siguiendo el mismo patrón por capas, todos conectados en `AppModule`. `src/grades` además expone el cálculo de notas de la sección 4, incluyendo el desglose opcional por sub-actividad.
 - **Validación de entrada**: `class-validator` + `class-transformer` con `ValidationPipe({ whitelist: true, transform: true })` global (`src/main.ts`). Los DTOs de creación/actualización de cada módulo están decorados.
 - **`src/shared/prisma-error.util.ts`**: traduce violaciones de unicidad/FK de Postgres (`sqlState` 23505/23503) a `ConflictException`/`BadRequestException`.
-- **`src/shared/excel`**: POC de exportación/relleno de plantillas `.xlsx` con `exceljs`, todavía con datos y columnas hardcodeadas — no está conectado al modelo de datos real.
+- **`src/period-files`**: generación y historial de archivos por período/materia (ver *PeriodFile*), usa `GradeCalculationService`, `FillPeriodNotesUseCase` y `S3Service`.
+- **`src/shared/storage`**: `S3Service` global (`put` sin sobrescribir, `getBuffer`, `getDownloadUrl` prefirmada, `delete`). Config por `S3_*` en `.env` (ver `.env.example`); MinIO local con `docker compose up -d minio minio-init`, o un bucket real de AWS quitando `S3_ENDPOINT`/`S3_FORCE_PATH_STYLE`.
+- **`src/shared/excel`**: `FillPeriodNotesUseCase` rellena la plantilla (`empty.xlsx` o un archivo previo) con los alumnos y las notas de un período y devuelve un `Buffer`; el mapeo de columnas por período está en `domain/helpers/period-mapped.ts`. El caso de uso `PocExcelUseCase` (`GET /excel/poc`) sigue siendo el POC original con datos hardcodeados.
 - **Pendiente**: login/autenticación para el docente (fuera de alcance por ahora, sistema de un solo usuario), tests automatizados de los módulos nuevos.

@@ -1,3 +1,5 @@
+> **Actualización:** esta integración ya está implementada en `src/period-files` (ver `CLAUDE.md`, sección *PeriodFile*). Lo de abajo se conserva como referencia del diseño original; el código real difiere (ej. se calcula por evaluación, no por período, para llenar parcialmente cuando faltan notas).
+
 # Integración pendiente: llenar Excel con notas reales
 
 > Referencia para cuando se conecte `src/shared/excel` (hoy usa datos hardcodeados en `FakeStudentsNotes`) con el modelo de notas real (`src/grades`). No implementado todavía — es la guía para hacerlo.

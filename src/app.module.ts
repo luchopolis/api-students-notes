@@ -12,6 +12,7 @@ import { EvaluationsModule } from './evaluations/evaluations.module.js';
 import { ActivitiesModule } from './activities/activities.module.js';
 import { SubActivitiesModule } from './sub-activities/sub-activities.module.js';
 import { GradesModule } from './grades/grades.module.js';
+import { PeriodFilesModule } from './period-files/period-files.module.js';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { GradesModule } from './grades/grades.module.js';
     ActivitiesModule,
     SubActivitiesModule,
     GradesModule,
+    PeriodFilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

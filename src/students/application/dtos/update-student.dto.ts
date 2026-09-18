@@ -1,4 +1,5 @@
-import { IsDateString, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsDateString, IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { GENDERS, type Gender } from '../../domain/entities/student.entity.js';
 
 export class UpdateStudentDto {
   @IsOptional()
@@ -19,6 +20,10 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsString()
   readonly lastName2?: string;
+
+  @IsOptional()
+  @IsIn(GENDERS)
+  readonly gender?: Gender;
 
   @IsOptional()
   @IsDateString()
