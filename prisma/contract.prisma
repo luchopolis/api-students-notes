@@ -78,8 +78,8 @@ model Student {
   lastName1   String
   lastName2   String?
   gender      Gender?
-  birthDate   DateString
-  email       String       @unique
+  birthDate   DateString?
+  email       String?      @unique
 
   enrollments Enrollment[]
 

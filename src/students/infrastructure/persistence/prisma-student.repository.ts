@@ -12,8 +12,8 @@ type StudentRow = {
   lastName1: string;
   lastName2: string | null;
   gender: Gender | null;
-  birthDate: string;
-  email: string;
+  birthDate: string | null;
+  email: string | null;
 };
 
 function toEntity(row: StudentRow): Student {
@@ -49,8 +49,8 @@ export class PrismaStudentRepository implements IStudentRepository {
       lastName1: data.lastName1,
       lastName2: data.lastName2 ?? null,
       gender: data.gender ?? null,
-      birthDate: data.birthDate,
-      email: data.email,
+      birthDate: data.birthDate ?? null,
+      email: data.email ?? null,
     });
     return toEntity(row);
   }

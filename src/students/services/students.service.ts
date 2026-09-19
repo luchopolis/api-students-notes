@@ -4,6 +4,7 @@ import { STUDENT_REPOSITORY } from '../domain/repositories/student.repository.js
 import { Student } from '../domain/entities/student.entity.js';
 import { CreateStudentDto } from '../application/dtos/create-student.dto.js';
 import { UpdateStudentDto } from '../application/dtos/update-student.dto.js';
+import { rethrowAsHttpException } from '../../shared/prisma-error.util.js';
 
 @Injectable()
 export class StudentsService {
@@ -23,12 +24,21 @@ export class StudentsService {
     return student;
   }
 
-  create(data: CreateStudentDto): Promise<Student> {
-    return this.repository.create(data);
+  async create(data: CreateStudentDto): Promise<Student> {
+    try {
+      return await this.repository.create(data);
+    } catch (err) {
+      rethrowAsHttpException(err);
+    }
   }
 
   async update(id: string, data: UpdateStudentDto): Promise<Student> {
-    const updated = await this.repository.update(id, data);
+    let updated: Student | null;
+    try {
+      updated = await this.repository.update(id, data);
+    } catch (err) {
+      rethrowAsHttpException(err);
+    }
     if (!updated) {
       throw new NotFoundException(`Student ${id} not found`);
     }

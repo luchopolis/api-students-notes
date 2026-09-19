@@ -22,9 +22,11 @@ export class CreateStudentDto {
   @IsIn(GENDERS)
   readonly gender?: Gender;
 
+  @IsOptional()
   @IsDateString()
-  readonly birthDate!: string;
+  readonly birthDate?: string;
 
+  @IsOptional()
   @IsEmail()
-  readonly email!: string;
+  readonly email?: string;
 }

@@ -31,6 +31,9 @@ export type FillPeriodNotesInput = {
 // tiene un bloque de estadísticas (Moda, Mediana, Promedio…) que no debe tocarse.
 const MAX_ROWS_TO_SCAN = 300;
 
+const normalizeName = (name: string) =>
+  name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+
 @Injectable()
 export class FillPeriodNotesUseCase {
   constructor(private readonly excelService: ExcelService) {}
@@ -58,7 +61,9 @@ export class FillPeriodNotesUseCase {
 
     // Los alumnos ya presentes en el archivo base se identifican por NIE para no desalinear
     // las notas de períodos anteriores; los nuevos van a la primera fila libre.
+    const currentNies = new Set(students.map((student) => student.nie));
     const rowByNie = new Map<string, number>();
+    const orphanRowByName = new Map<string, number>();
     const freeRows: number[] = [];
     for (let rowNumber = RowStartIndex; rowNumber <= lastStudentRow; rowNumber++) {
       const row = worksheet.findRow(rowNumber);
@@ -66,12 +71,27 @@ export class FillPeriodNotesUseCase {
       const name = row?.getCell(STUDENT_START_COLUMN).text.trim() ?? '';
       if (nie) {
         rowByNie.set(nie, rowNumber);
+        if (name && !currentNies.has(nie)) orphanRowByName.set(normalizeName(name), rowNumber);
       } else if (!name) {
         freeRows.push(rowNumber);
       }
     }
 
-    const newStudents = students.filter((student) => !rowByNie.has(student.nie));
+    // Si a un alumno se le corrigió el NIE después de generar el archivo base, ya no aparece por NIE:
+    // se reconoce por su nombre en una fila cuyo NIE ya no pertenece a nadie inscrito, y se reutiliza
+    // esa fila (con su NIE actualizado) para no duplicarlo ni perder sus notas anteriores.
+    const renamedRowByNie = new Map<string, number>();
+    for (const student of students) {
+      if (rowByNie.has(student.nie)) continue;
+      const key = normalizeName(student.name);
+      const orphanRow = orphanRowByName.get(key);
+      if (orphanRow !== undefined) {
+        renamedRowByNie.set(student.nie, orphanRow);
+        orphanRowByName.delete(key);
+      }
+    }
+
+    const newStudents = students.filter((student) => !rowByNie.has(student.nie) && !renamedRowByNie.has(student.nie));
     if (newStudents.length > freeRows.length) {
       throw new BadRequestException(
         `The template only has room for ${rowByNie.size + freeRows.length} students; ` +
@@ -80,7 +100,7 @@ export class FillPeriodNotesUseCase {
     }
 
     for (const student of students) {
-      let rowNumber = rowByNie.get(student.nie);
+      let rowNumber = rowByNie.get(student.nie) ?? renamedRowByNie.get(student.nie);
       const isNewRow = rowNumber === undefined;
       if (rowNumber === undefined) {
         rowNumber = freeRows.shift()!;
@@ -88,6 +108,9 @@ export class FillPeriodNotesUseCase {
 
       const row = worksheet.getRow(rowNumber);
       row.getCell(STUDENT_START_COLUMN).value = student.name;
+      if (renamedRowByNie.has(student.nie)) {
+        row.getCell(STUDENT_NIE_COLUMN).value = student.nie;
+      }
       if (isNewRow) {
         row.getCell(STUDENT_NIE_COLUMN).value = student.nie;
         if (row.getCell(STUDENT_NUMBER_COLUMN).value === null) {

@@ -13,6 +13,7 @@ import { ActivitiesModule } from './activities/activities.module.js';
 import { SubActivitiesModule } from './sub-activities/sub-activities.module.js';
 import { GradesModule } from './grades/grades.module.js';
 import { PeriodFilesModule } from './period-files/period-files.module.js';
+import { StudentsImportModule } from './students-import/students-import.module.js';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PeriodFilesModule } from './period-files/period-files.module.js';
     SubActivitiesModule,
     GradesModule,
     PeriodFilesModule,
+    StudentsImportModule,
   ],
   controllers: [AppController],
   providers: [AppService],

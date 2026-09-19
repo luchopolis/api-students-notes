@@ -7,6 +7,11 @@ import { FindPeriodFilesQueryDto } from '../application/dtos/find-period-files-q
 export class PeriodFilesController {
   constructor(private readonly periodFilesService: PeriodFilesService) {}
 
+  @Get('preview')
+  preview(@Query() query: GeneratePeriodFileDto) {
+    return this.periodFilesService.preview(query);
+  }
+
   @Post()
   generate(@Body() data: GeneratePeriodFileDto) {
     return this.periodFilesService.generate(data);

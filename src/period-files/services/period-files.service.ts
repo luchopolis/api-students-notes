@@ -34,12 +34,21 @@ const NOTE_FIELD_BY_EVALUATION_TYPE = {
   EXAM: 'ENote',
 } as const;
 
+type GradedStudent = { row: PeriodNotesStudent; missing: string[]; student: Student };
+
+export type IncompleteStudent = { dni: string; name: string; missing: string[] };
+
+export type PreviewPeriodFileResult = {
+  totalStudents: number;
+  incompleteStudents: IncompleteStudent[];
+};
+
 export type GeneratePeriodFileResult = {
   file: PeriodFile;
   /** Archivo de período anterior sobre el que se construyó; `null` si se partió de la plantilla vacía. */
   basedOn: { periodFileId: string; periodNumber: number } | null;
   /** Alumnos con evaluaciones sin calificar por completo: esas celdas quedaron vacías en el Excel. */
-  incompleteStudents: { dni: string; name: string; missing: string[] }[];
+  incompleteStudents: IncompleteStudent[];
 };
 
 function formatStudentName(student: Student): string {
@@ -84,7 +93,56 @@ export class PeriodFilesService {
     return { url, fileName: file.fileName, expiresInSeconds: DOWNLOAD_URL_EXPIRES_IN_SECONDS };
   }
 
+  /** Revisa, sin generar ni guardar nada, qué estudiantes tienen evaluaciones sin calificar por completo. */
+  async preview({ periodId, subjectId }: GeneratePeriodFileDto): Promise<PreviewPeriodFileResult> {
+    const { gradedStudents } = await this.collectPeriodNotes(periodId, subjectId);
+    return {
+      totalStudents: gradedStudents.length,
+      incompleteStudents: this.toIncompleteStudents(gradedStudents),
+    };
+  }
+
   async generate({ periodId, subjectId }: GeneratePeriodFileDto): Promise<GeneratePeriodFileResult> {
+    const { period, subject, academicYear, gradedStudents } = await this.collectPeriodNotes(periodId, subjectId);
+
+    const base = await this.findBaseFile(subjectId, period);
+    const baseFile = base ? await this.s3Service.getBuffer(base.file.storageKey) : undefined;
+
+    const buffer = await this.fillPeriodNotes.execute({
+      periodNumber: period.number,
+      students: gradedStudents.map(({ row }) => row),
+      baseFile,
+    });
+
+    const id = randomUUID();
+    const generatedAt = new Date().toISOString();
+    const storageKey = `${period.academicYearId}/${subjectId}/${periodId}/${generatedAt.replace(/[-:.]/g, '')}_${id}.xlsx`;
+    const fileName = `${subject.code}_P${period.number}_${academicYear.yearName}.xlsx`.replace(
+      /[^A-Za-z0-9._-]/g,
+      '_',
+    );
+
+    await this.s3Service.put(storageKey, buffer, { contentType: XLSX_CONTENT_TYPE });
+
+    let file: PeriodFile;
+    try {
+      file = await this.repository.create({ id, periodId, subjectId, fileName, storageKey, generatedAt });
+    } catch (error) {
+      await this.s3Service.delete(storageKey).catch((cleanupError) => {
+        this.logger.error(`Could not remove orphan object ${storageKey}`, cleanupError);
+      });
+      rethrowAsHttpException(error);
+    }
+
+    return {
+      file,
+      basedOn: base ? { periodFileId: base.file.id, periodNumber: base.periodNumber } : null,
+      incompleteStudents: this.toIncompleteStudents(gradedStudents),
+    };
+  }
+
+  /** Alumnos inscritos (orden alfabético) con sus notas por evaluación ya calculadas. */
+  private async collectPeriodNotes(periodId: string, subjectId: string) {
     const period = await this.periodRepository.findById(periodId);
     if (!period) {
       throw new NotFoundException(`Period ${periodId} not found`);
@@ -141,46 +199,17 @@ export class PeriodFilesService {
             missing.push(evaluation.type);
           }
         }
-        return { row, missing, student };
+        return { row, missing, student } satisfies GradedStudent;
       }),
     );
 
-    const base = await this.findBaseFile(subjectId, period);
-    const baseFile = base ? await this.s3Service.getBuffer(base.file.storageKey) : undefined;
+    return { period, subject, academicYear, gradedStudents };
+  }
 
-    const buffer = await this.fillPeriodNotes.execute({
-      periodNumber: period.number,
-      students: gradedStudents.map(({ row }) => row),
-      baseFile,
-    });
-
-    const id = randomUUID();
-    const generatedAt = new Date().toISOString();
-    const storageKey = `${period.academicYearId}/${subjectId}/${periodId}/${generatedAt.replace(/[-:.]/g, '')}_${id}.xlsx`;
-    const fileName = `${subject.code}_P${period.number}_${academicYear.yearName}.xlsx`.replace(
-      /[^A-Za-z0-9._-]/g,
-      '_',
-    );
-
-    await this.s3Service.put(storageKey, buffer, { contentType: XLSX_CONTENT_TYPE });
-
-    let file: PeriodFile;
-    try {
-      file = await this.repository.create({ id, periodId, subjectId, fileName, storageKey, generatedAt });
-    } catch (error) {
-      await this.s3Service.delete(storageKey).catch((cleanupError) => {
-        this.logger.error(`Could not remove orphan object ${storageKey}`, cleanupError);
-      });
-      rethrowAsHttpException(error);
-    }
-
-    return {
-      file,
-      basedOn: base ? { periodFileId: base.file.id, periodNumber: base.periodNumber } : null,
-      incompleteStudents: gradedStudents
-        .filter(({ missing }) => missing.length > 0)
-        .map(({ student, missing }) => ({ dni: student.dni, name: formatStudentName(student), missing })),
-    };
+  private toIncompleteStudents(gradedStudents: GradedStudent[]): IncompleteStudent[] {
+    return gradedStudents
+      .filter(({ missing }) => missing.length > 0)
+      .map(({ student, missing }) => ({ dni: student.dni, name: formatStudentName(student), missing }));
   }
 
   /**

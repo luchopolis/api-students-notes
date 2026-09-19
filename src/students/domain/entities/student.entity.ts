@@ -8,8 +8,8 @@ export class Student {
   readonly lastName1: string;
   readonly lastName2: string | null;
   readonly gender: Gender | null;
-  readonly birthDate: string;
-  readonly email: string;
+  readonly birthDate: string | null;
+  readonly email: string | null;
 
   constructor(options: {
     id: string;
@@ -18,8 +18,8 @@ export class Student {
     lastName1: string;
     lastName2?: string | null;
     gender?: Gender | null;
-    birthDate: string;
-    email: string;
+    birthDate?: string | null;
+    email?: string | null;
   }) {
     this.id = options.id;
     this.dni = options.dni;
@@ -27,8 +27,8 @@ export class Student {
     this.lastName1 = options.lastName1;
     this.lastName2 = options.lastName2 ?? null;
     this.gender = options.gender ?? null;
-    this.birthDate = options.birthDate;
-    this.email = options.email;
+    this.birthDate = options.birthDate ?? null;
+    this.email = options.email ?? null;
   }
 
   get fullName(): string {

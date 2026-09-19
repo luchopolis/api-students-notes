@@ -916,7 +916,7 @@
           "Student": {
             "fields": {
               "birthDate": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/date-string@1",
                   "kind": "scalar"
@@ -930,7 +930,7 @@
                 }
               },
               "email": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -2030,7 +2030,7 @@
                 "birthDate": {
                   "codecId": "pg/date-string@1",
                   "nativeType": "date",
-                  "nullable": false
+                  "nullable": true
                 },
                 "dni": {
                   "codecId": "pg/text@1",
@@ -2040,7 +2040,7 @@
                 "email": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": true
                 },
                 "firstName": {
                   "codecId": "pg/text@1",
@@ -2275,7 +2275,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "bd50193aa72d5d430a75167157d05d76cb6582ee8731893c37747d73c8f97d7f"
+    "storageHash": "2004c6f044ba64649deebe70df7f3bdb55594efd0f2e38e95b6b9b023133b2d9"
   },
   "execution": {
     "executionHash": "c6f9df4d3742b01b041609650bc5a644d1f7960e08f0fa88e8472f4d93b59060",

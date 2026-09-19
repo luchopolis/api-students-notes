@@ -3,10 +3,8 @@ import { StudentsController } from './controllers/students.controller.js';
 import { StudentsService } from './services/students.service.js';
 import { STUDENT_REPOSITORY } from './domain/repositories/student.repository.js';
 import { PrismaStudentRepository } from './infrastructure/persistence/prisma-student.repository.js';
-import { ExcelModule } from '../shared/excel/excel.module.js';
 
 @Module({
-  imports: [ExcelModule],
   controllers: [StudentsController],
   providers: [
     StudentsService,

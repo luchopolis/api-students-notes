@@ -31,9 +31,9 @@ aplicación de gestión de notas escolares para un MVP/PoC. El sistema será uti
 
 ### Student (`students`)
 - Representa a cada estudiante matriculado
-- Campos: `id`, `dni` (único), `firstName`, `lastName1`, `lastName2` (opcional), `gender` (opcional, enum `Gender`: `F`/`M`; va a la columna de género de la planilla Excel), `birthDate`, `email` (único)
-- Restricciones: `dni` y `email` deben ser únicos en toda la base de datos
-- Implementado en `src/students` (CRUD completo sobre Prisma; ver *Estado de implementación* al final)
+- Campos: `id`, `dni` (único), `firstName`, `lastName1`, `lastName2` (opcional), `gender` (opcional, enum `Gender`: `F`/`M`; va a la columna de género de la planilla Excel), `birthDate` (opcional), `email` (opcional, único cuando existe)
+- Restricciones: `dni` debe ser único en toda la base de datos, y `email` también cuando está presente. `birthDate` y `email` son opcionales porque la lista que se importa desde Excel solo trae NIE, nombre y género.
+- Implementado en `src/students` (CRUD completo sobre Prisma; ver *Estado de implementación* al final). `PUT /students/:id` acepta cambios parciales: los obligatorios (`dni`, `firstName`, `lastName1`) no pueden ir vacíos ni en `null`; en los opcionales, `null` borra el valor. Un `dni` o `email` repetido responde 409.
 
 ### Subject (`subjects`)
 - Representa una materia/curso
@@ -88,8 +88,8 @@ aplicación de gestión de notas escolares para un MVP/PoC. El sistema será uti
 - Historial de archivos `.xlsx` generados por período y materia. El archivo vive en S3; la tabla guarda solo la referencia.
 - Campos: `id`, `periodId` (FK), `subjectId` (FK), `fileName`, `storageKey` (único, key del objeto en S3), `generatedAt` (`TimestamptzString(3)`, texto de Postgres)
 - Sin UNIQUE sobre (`periodId`, `subjectId`) a propósito: cada generación es un snapshot nuevo y coexisten varios por período. El año se obtiene vía `period.academicYearId`.
-- Implementado en `src/period-files`: `POST /period-files` (`{ periodId, subjectId }`) genera y guarda; `GET /period-files?periodId&subjectId` lista (más reciente primero); `GET /period-files/:id/download` devuelve `{ url, fileName, expiresInSeconds }` con una URL prefirmada.
-- Al generar, si existe un archivo de un período anterior de la misma materia y año, se parte del más reciente del período anterior más cercano (nunca del mismo período); si no, de `empty.xlsx`. Los alumnos se ubican por NIE (`dni`) para no desalinear notas anteriores; los nuevos van a la primera fila libre. Las evaluaciones sin calificar por completo quedan vacías en el Excel y se reportan en `incompleteStudents`.
+- Implementado en `src/period-files`: `POST /period-files` (`{ periodId, subjectId }`) genera y guarda; `GET /period-files/preview?periodId&subjectId` revisa sin generar nada qué estudiantes tienen evaluaciones sin calificar (`{ totalStudents, incompleteStudents }`), para que el cliente pida confirmación antes de generar; `GET /period-files?periodId&subjectId` lista (más reciente primero); `GET /period-files/:id/download` devuelve `{ url, fileName, expiresInSeconds }` con una URL prefirmada.
+- Al generar, si existe un archivo de un período anterior de la misma materia y año, se parte del más reciente del período anterior más cercano (nunca del mismo período); si no, de `empty.xlsx`. Los alumnos se ubican por NIE (`dni`) para no desalinear notas anteriores; los nuevos van a la primera fila libre. Si a un alumno se le corrigió el NIE después de generar el archivo base, se reconoce por su nombre (mismo nombre en una fila cuyo NIE ya no pertenece a nadie inscrito) y se reutiliza esa fila con el NIE actualizado; si cambian NIE y nombre a la vez no hay forma de reconocerlo y aparece como alumno nuevo. Las evaluaciones sin calificar por completo quedan vacías en el Excel y se reportan en `incompleteStudents`.
 
 ---
 
@@ -198,6 +198,7 @@ NOTA_FINAL_ANO =
 - **`src/students`**, **`src/teachers`**, **`src/academic-years`**, **`src/periods`**, **`src/subjects`**, **`src/enrollments`**, **`src/evaluations`**, **`src/activities`**, **`src/sub-activities`**, **`src/grades`**: CRUD completo (entidad, repositorio Prisma, servicio, controlador REST) siguiendo el mismo patrón por capas, todos conectados en `AppModule`. `src/grades` además expone el cálculo de notas de la sección 4, incluyendo el desglose opcional por sub-actividad.
 - **Validación de entrada**: `class-validator` + `class-transformer` con `ValidationPipe({ whitelist: true, transform: true })` global (`src/main.ts`). Los DTOs de creación/actualización de cada módulo están decorados.
 - **`src/shared/prisma-error.util.ts`**: traduce violaciones de unicidad/FK de Postgres (`sqlState` 23505/23503) a `ConflictException`/`BadRequestException`.
+- **`src/students-import`**: `POST /students/import` (multipart: `file` .xlsx con columnas `nie | name | gender` —encabezado opcional en la primera fila—, `subjectId`, `academicYearId`, `dryRun`). Crea los estudiantes que no existan (por `dni`) e inscribe en la materia y año elegidos; el nombre debe venir como «APELLIDOS, NOMBRES» (todos los apellidos van a `lastName1`). Con `dryRun=true` solo devuelve qué pasaría por fila (`create`/`enroll`/`skip`/`error`) sin guardar nada. Es idempotente y no transaccional: cada fila informa su propio resultado; a un estudiante existente sin género se le completa el género si el archivo lo trae.
 - **`src/period-files`**: generación y historial de archivos por período/materia (ver *PeriodFile*), usa `GradeCalculationService`, `FillPeriodNotesUseCase` y `S3Service`.
 - **`src/shared/storage`**: `S3Service` global (`put` sin sobrescribir, `getBuffer`, `getDownloadUrl` prefirmada, `delete`). Config por `S3_*` en `.env` (ver `.env.example`); MinIO local con `docker compose up -d minio minio-init`, o un bucket real de AWS quitando `S3_ENDPOINT`/`S3_FORCE_PATH_STYLE`.
 - **`src/shared/excel`**: `FillPeriodNotesUseCase` rellena la plantilla (`empty.xlsx` o un archivo previo) con los alumnos y las notas de un período y devuelve un `Buffer`; el mapeo de columnas por período está en `domain/helpers/period-mapped.ts`. El caso de uso `PocExcelUseCase` (`GET /excel/poc`) sigue siendo el POC original con datos hardcodeados.
