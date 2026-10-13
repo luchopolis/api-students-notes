@@ -26,6 +26,9 @@ export class S3Service implements OnModuleDestroy {
     endpoint: this.config.endpoint,
     forcePathStyle: this.config.forcePathStyle,
     credentials: this.config.credentials,
+    // Desde el SDK 3.729 el CRC32 se manda siempre y Cloudflare R2 lo rechaza ("x-amz-checksum-crc32 not implemented"). Con WHEN_REQUIRED solo se calcula donde S3 lo exige; MinIO y AWS funcionan igual.
+    requestChecksumCalculation: 'WHEN_REQUIRED',
+    responseChecksumValidation: 'WHEN_REQUIRED',
   });
 
   onModuleDestroy() {

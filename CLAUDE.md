@@ -11,8 +11,8 @@ aplicación de gestión de notas escolares para un MVP/PoC. El sistema será uti
 ## 1. Descripción General de las Entidades (Tablas)
 
 ### Teacher (`teachers`)
-- Representa a la profesora que usa el sistema (por ahora un solo registro, sin login/auth)
-- Campos: `id` (uuid), `name`, `email` (único)
+- Representa a la profesora que usa el sistema (un solo registro) y es también el usuario del login
+- Campos: `id` (uuid), `name`, `email` (único), `passwordHash` (opcional, scrypt `salt:hash`; nunca sale por la API: no está en la entidad `Teacher`, solo en `findCredentialsByEmail`/`upsertWithPassword`)
 - Implementado en `src/teachers` (CRUD completo)
 
 ### AcademicYear (`academic_years`)
@@ -202,4 +202,7 @@ NOTA_FINAL_ANO =
 - **`src/period-files`**: generación y historial de archivos por período/materia (ver *PeriodFile*), usa `GradeCalculationService`, `FillPeriodNotesUseCase` y `S3Service`.
 - **`src/shared/storage`**: `S3Service` global (`put` sin sobrescribir, `getBuffer`, `getDownloadUrl` prefirmada, `delete`). Config por `S3_*` en `.env` (ver `.env.example`); MinIO local con `docker compose up -d minio minio-init`, o un bucket real de AWS quitando `S3_ENDPOINT`/`S3_FORCE_PATH_STYLE`.
 - **`src/shared/excel`**: `FillPeriodNotesUseCase` rellena la plantilla (`empty.xlsx` o un archivo previo) con los alumnos y las notas de un período y devuelve un `Buffer`; el mapeo de columnas por período está en `domain/helpers/period-mapped.ts`. El caso de uso `PocExcelUseCase` (`GET /excel/poc`) sigue siendo el POC original con datos hardcodeados.
-- **Pendiente**: login/autenticación para el docente (fuera de alcance por ahora, sistema de un solo usuario), tests automatizados de los módulos nuevos.
+- **`src/auth`**: login con JWT (`@nestjs/jwt`, HS256). `POST /auth/login` (`{ email, password }` → `{ accessToken, teacher }`, limitado a 5 intentos/min por IP con `@nestjs/throttler`) y `GET /auth/me`. `JwtAuthGuard` es `APP_GUARD`: **toda ruta exige `Authorization: Bearer <token>` salvo las marcadas `@Public()`** (login y `GET /`). Env: `JWT_SECRET` (obligatorio, ≥32 caracteres; la app no arranca sin él) y `JWT_EXPIRES_IN` (por defecto `7d`). Hash de contraseñas en `password.util.ts` (`node:crypto` scrypt).
+- **Usuario por defecto**: `prisma/seed-admin.ts` (`yarn build && yarn db:seed`) crea o actualiza la profesora de `ADMIN_EMAIL`/`ADMIN_PASSWORD`/`ADMIN_NAME`; es idempotente y el `.env` manda sobre la contraseña. En producción lo ejecuta el servicio `migrate` de `docker-compose.prod.yaml` justo después de `prisma db update`. No hay cambio/recuperación de contraseña: se rota editando `.env` y volviendo a desplegar.
+- **Frontend** (`student-manager-frontend`): `AuthProvider` guarda el token en `localStorage`, `RequireAuth` protege las rutas (y monta `WorkspaceProvider`), `/login` es la única ruta pública; un 401 en cualquier llamada cierra la sesión.
+- **Pendiente**: tests automatizados de la mayoría de los módulos (solo `src/auth` tiene specs).

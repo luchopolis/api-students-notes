@@ -21,6 +21,8 @@ model Teacher {
   id    Uuid   @id @default(uuid())
   name  String
   email String @unique
+  // scrypt ("salt:hash" en hex). Nulo si la profesora no tiene login todavía (lo fija `prisma/seed-admin.ts`).
+  passwordHash String?
 
   academicYears AcademicYear[]
 

@@ -25,14 +25,17 @@
     "db:generate": "prisma contract emit",
     "db:dev": "prisma db update",
     "db:migrate": "prisma migration plan",
-    "db:deploy": "prisma migrate"
+    "db:deploy": "prisma migrate",
+    "db:seed": "node dist/prisma/seed-admin.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1136.0",
     "@aws-sdk/s3-request-presigner": "^3.1136.0",
     "@nestjs/common": "^12.0.1",
     "@nestjs/core": "^12.0.1",
+    "@nestjs/jwt": "^12.0.2",
     "@nestjs/platform-express": "^12.0.1",
+    "@nestjs/throttler": "^6.7.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@prisma/orm-postgres": "^8.0.0-rc.11",
